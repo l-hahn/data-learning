@@ -2,8 +2,11 @@
 #define _MMATRIX_HPP_
 
 class mmatrix{
-	mmatrix();
+    public:
+        mmatrix();
 
+    private:
+        
 };
 
 #endif
