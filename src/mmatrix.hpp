@@ -11,55 +11,66 @@ class mmatrix{
     public:
         mmatrix();
         mmatrix(size_t Row, size_t Col, double Val = 0);
-        mmatrix(mdimension & Dim, double Val = 0);
-        mmatrix(mdimension && Dim, double Val = 0);
+        mmatrix(const mdimension & Dim, double Val = 0);
+        mmatrix(const mdimension && Dim, double Val = 0);
 
 
         void push_back(double Val);
         void push_back_row(double Val);
         void push_back_col(double Val);
-        void push_back(std::vector<double> & ValList);
-        void push_back(std::vector<double> && ValList);
-        void push_back_row(std::vector<double> & ValList);
-        void push_back_row(std::vector<double> && ValList);
-        void push_back_col(std::vector<double> & ValList);
-        void push_back_col(std::vector<double> && ValList);
+        void push_back(const std::vector<double> & ValList);
+        void push_back(const std::vector<double> && ValList);
+        void push_back_row(const std::vector<double> & ValList);
+        void push_back_row(const std::vector<double> && ValList);
+        void push_back_col(const std::vector<double> & ValList);
+        void push_back_col(const std::vector<double> && ValList);
+
+        void resize(size_t NewSize, double Val = 0);
+        void resize(size_t NewRow, NewCol, double Val = 0);
+        void resize(const mdimension && Dim, double Val = 0);
+        void resize(const mdimension & Dim, double Val = 0);
+
+        void reserve(size_t NewSize);
+        void reserve(size_t NewRow, NewCol);
+        void reserve(const mdimension && Dim);
+        void reserve(const mdimension & Dim);
+
+        void clear() noexcept;
 
 
         std::vector<double>& operator[](size_t Idx);
 
-        mmatrix& operator+=(const mmatrix & Mat);
-        mmatrix& operator-=(const mmatrix & Mat);
         mmatrix& operator+=(const mmatrix && Mat);
         mmatrix& operator-=(const mmatrix && Mat);
+        mmatrix& operator+=(const mmatrix & Mat);
+        mmatrix& operator-=(const mmatrix & Mat);
         mmatrix& operator+=(const double Val);
         mmatrix& operator-=(const double Val);
 
-        mmatrix& operator+(const mmatrix & MatL, const mmatrix & MatR) const;
-        mmatrix& operator-(const mmatrix & MatL, const mmatrix & MatR) const;
-        mmatrix& operator+(const mmatrix && MatL, const mmatrix && MatR) const;
-        mmatrix& operator-(const mmatrix && MatL, const mmatrix && MatR) const;
-        mmatrix& operator+(const mmatrix && MatL, const double Val) const;
-        mmatrix& operator-(const mmatrix && MatL, const double Val) const;
-        mmatrix& operator+(const double Val, const mmatrix && MatL) const;
-        mmatrix& operator-(const double Val, const mmatrix && MatL) const;
+        mmatrix& operator+(const mmatrix && Mat) const;
+        mmatrix& operator-(const mmatrix && Mat) const;
+        mmatrix& operator+(const mmatrix & Mat) const;
+        mmatrix& operator-(const mmatrix & Mat) const;
+        mmatrix& operator+(const double Val) const;
+        mmatrix& operator-(const double Val) const;
 
-        mmatrix& operator*=(const mmatrix & Mat);
         mmatrix& operator*=(const mmatrix && Mat);
+        mmatrix& operator*=(const mmatrix & Mat);
         mmatrix& operator*=(const double Val);
         mmatrix& operator/=(const double Val);
 
-        mmatrix& operator*(const mmatrix & MatL, const mmatrix & MatR) const;
-        mmatrix& operator*(const mmatrix && MatL, const mmatrix && MatR) const;
-        mmatrix& operator*(const mmatrix && MatL, const double Val) const;
-        mmatrix& operator/(const mmatrix && MatL, const double Val) const;
-        mmatrix& operator*(const double Val, const mmatrix && MatL) const;
-        mmatrix& operator/(const double Val, const mmatrix && MatL) const;
+        mmatrix& operator*(const mmatrix && Mat) const;
+        mmatrix& operator*(const mmatrix & Mat) const;
+        mmatrix& operator*(const double Val) const;
+        mmatrix& operator/(const double Val) const;
+
+        mmatrix& operator=(const mmatrix && Mat);
+        mmatrix& operator=(const mmatrix & Mat);
 
 
-        mmatrix& transpose();
-        mmatrix& entry_add();
-        mmatrix& entry_mult();
+        mmatrix& transpose() const;
+        mmatrix& entry_mult(const mmatrix && Mat);
+        mmatrix& entry_mult(const mmatrix & Mat);
         mmatrix& eigen_vectors() const;
         std::vector<double> eigen_values() const;
 

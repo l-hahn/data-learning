@@ -68,7 +68,9 @@ mdimension mdimension::operator*(const mdimension & Dim) const{
         NewDim._Col = Dim._Col;
     }
     else{
-        throw std::out_of_range("Matrix dimensions "+to_string() + " * " + Dim.to_string() + " are not conforming!");
+        throw std::out_of_range("Matrix dimensions "+to_string() + " * "
+            + Dim.to_string() + " are not conforming, " + std::to_string(_Col)
+            + " != " +std::to_string(Dim._Row) + ".");
     }
     return NewDim;
 }
@@ -77,7 +79,9 @@ mdimension mdimension::operator*=(const mdimension & Dim){
         _Col = Dim._Col;
     }
     else{
-        throw std::out_of_range("Matrix dimensions "+to_string() + " * " + Dim.to_string() + " are not conforming!");
+        throw std::out_of_range("Matrix dimensions "+to_string() + " * "
+            + Dim.to_string() + " are not conforming, " + std::to_string(_Col)
+            + " != " +std::to_string(Dim._Row) + ".");
     }
     return *this;
 }
