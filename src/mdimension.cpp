@@ -52,7 +52,6 @@ mdimension mdimension::operator=(const mdimension & Dim){
     _Row = Dim._Row;
     _Col = Dim._Col;
     return *this;
-    return *this;
 }
 
 mdimension mdimension::operator*(const mdimension && Dim) const{

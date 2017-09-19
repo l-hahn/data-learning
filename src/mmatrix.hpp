@@ -68,8 +68,11 @@ class mmatrix{
 
 
         mmatrix& transpose() const;
+        void transpose() const;
         mmatrix& entry_mult(const mmatrix && Mat);
         mmatrix& entry_mult(const mmatrix & Mat);
+        mmatrix& equal_entry_mult(const mmatrix && Mat);
+        mmatrix& equal_entry_mult(const mmatrix & Mat);
         mmatrix& eigen_vectors() const;
         std::vector<double> eigen_values() const;
 

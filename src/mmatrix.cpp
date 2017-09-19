@@ -274,21 +274,52 @@ mmatrix& mmatrix::operator/(const double Val) const{
 }
 
 mmatrix& mmatrix::operator=(const mmatrix && Mat){
-
+    return operator=(Mat);
 }
 mmatrix& mmatrix::operator=(const mmatrix & Mat){
-
+    _Dimensions = Mat._Dimensions;
+    _Matrix = Mat._Matrix;
+    return *this;
 }
 
 
 mmatrix& mmatrix::transpose() const{
+    
+}
+void mmatrix::transpose() const{
 
 }
 mmatrix& mmatrix::entry_mult(const mmatrix && Mat){
-
+    return entry_mult(Mat);
 }
 mmatrix& mmatrix::entry_mult(const mmatrix & Mat){
-
+    mmatrix NewMat(_Dimensions, 0);
+    std::vector< std::vector<double> > & ResMat = NewMat._Matrix;
+    std::transform(ResMat.begin(),ResMat.end(),Mat._Matrix.begin(),NewMat.begin(),
+    [](const std::vector<double> & VecA, const std::vector<double> & VecB){
+        std::vector<unsigned> ResVec(VecA.size());   
+        std::transform(VecA.begin(),VecA.end(),VecB.begin(),ResVec.begin(),
+            [](unsigned ValA, unsigned ValB){
+                return ValA * ValB;
+            });
+        return ResVec;
+    });
+    return NewMat;
+}
+mmatrix& mmatrix::equal_entry_mult(const mmatrix && Mat){
+    return equal_entry_mult(Mat);
+}
+mmatrix& mmatrix::equal_entry_mult(const mmatrix & Mat){
+    std::transform(_Matrix.begin(),_Matrix.end(),Mat._Matrix.begin(),_Matrix.begin(),
+    [](const std::vector<double> & VecA, const std::vector<double> & VecB){
+        std::vector<unsigned> ResVec(VecA.size());   
+        std::transform(VecA.begin(),VecA.end(),VecB.begin(),ResVec.begin(),
+            [](unsigned ValA, unsigned ValB){
+                return ValA * ValB;
+            });
+        return ResVec;
+    });
+    return *this;
 }
 mmatrix& mmatrix::eigen_vectors() const{
 
@@ -298,14 +329,14 @@ std::vector<double> mmatrix::eigen_values() const{
 }
 
 mdimension mmatrix::dimension() const{
-
+    return _Dimensions;
 }
 mdimension mmatrix::size() const{
-
+    return _Dimensions;
 }
 size_t mmatrix::row_size() const{
-
+    return _Dimensions._Row;
 }
 size_t mmatrix::col_size() const{
-
+    return _Dimensions._Col;
 }
