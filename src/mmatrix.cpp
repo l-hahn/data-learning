@@ -242,6 +242,8 @@ mmatrix& mmatrix::operator*(const mmatrix && Mat) const{
     return operator*(Mat);
 }
 mmatrix& mmatrix::operator*(const mmatrix & Mat) const{
+    mdimension NewDim = _Dimensions*Mat._Dimensions;
+    mmatrix NewMat(NewDim);
 
 }
 mmatrix& mmatrix::operator*(const double Mul) const{
@@ -284,9 +286,11 @@ mmatrix& mmatrix::operator=(const mmatrix & Mat){
 
 
 mmatrix& mmatrix::transpose() const{
-
+    mdimension NewDim(_Dimensions._Col,_Dimensions._Row);
+    mmatrix NewMat(NewDim,0);
+    std::transform(_Matrix.begin(),_Matrix.end(),NewMat._Matrix.begin(),[]())
 }
-void mmatrix::transpose() const{
+void mmatrix::transpose(){
 
 }
 mmatrix& mmatrix::entry_mult(const mmatrix && Mat){
