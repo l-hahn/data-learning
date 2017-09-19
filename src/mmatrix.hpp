@@ -1,8 +1,10 @@
 #ifndef _MMATRIX_HPP_
 #define _MMATRIX_HPP_
 
+#include <algorithm>
 #include <cstdlib>
 #include <iterator>
+#include <stdexcept>
 #include <vector>
 
 #include "mdimension.hpp"
@@ -15,15 +17,12 @@ class mmatrix{
         mmatrix(const mdimension && Dim, double Val = 0);
 
 
-        void push_back(double Val);
-        void push_back_row(double Val);
-        void push_back_col(double Val);
-        void push_back(const std::vector<double> & ValList);
-        void push_back(const std::vector<double> && ValList);
-        void push_back_row(const std::vector<double> & ValList);
-        void push_back_row(const std::vector<double> && ValList);
-        void push_back_col(const std::vector<double> & ValList);
-        void push_back_col(const std::vector<double> && ValList);
+        void push_back(const std::vector<double> && ValList, bool EnsureSize = false);
+        void push_back(const std::vector<double> & ValList, bool EnsureSize = false);
+        void push_back_row(const std::vector<double> && ValList, bool EnsureSize = false);
+        void push_back_row(const std::vector<double> & ValList, bool EnsureSize = false);
+        void push_back_col(const std::vector<double> && ValList, bool EnsureSize = false);
+        void push_back_col(const std::vector<double> & ValList, bool EnsureSize = false);
 
         void resize(size_t NewSize, double Val = 0);
         void resize(size_t NewRow, NewCol, double Val = 0);
