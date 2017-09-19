@@ -215,8 +215,8 @@ mmatrix& mmatrix::operator*=(const mmatrix & Mat){
 
 }
 mmatrix& mmatrix::operator*=(const double Mul){
-    std::transform(_Matrix.begin(),_Matrix.end(),_Matrix.begin(),[Mul]
-    (std::vector<double> & Vec){
+    std::transform(_Matrix.begin(),_Matrix.end(),_Matrix.begin(),
+    [Mul](std::vector<double> & Vec){
         std::vector<double> ResVec(Vec.size());
         std::transform(Vec.begin(), Vec.end(),ResVec.begin(),[Mul](double Val){
             return Val * Mul;
@@ -227,8 +227,8 @@ mmatrix& mmatrix::operator*=(const double Mul){
 
 }
 mmatrix& mmatrix::operator/=(const double Mul){
-    std::transform(_Matrix.begin(),_Matrix.end(),_Matrix.begin(),[Mul]
-    (std::vector<double> & VecA){
+    std::transform(_Matrix.begin(),_Matrix.end(),_Matrix.begin(),
+    [Mul](std::vector<double> & Vec){
         std::vector<double> ResVec(Vec.size());
         std::transform(Vec.begin(), Vec.end(),ResVec.begin(),[Mul](double Val){
             return Val / Mul;
@@ -244,29 +244,29 @@ mmatrix& mmatrix::operator*(const mmatrix && Mat) const{
 mmatrix& mmatrix::operator*(const mmatrix & Mat) const{
 
 }
-mmatrix& mmatrix::operator*(const double Val) const{
+mmatrix& mmatrix::operator*(const double Mul) const{
     mmatrix NewMat(_Dimensions, 0);
     std::vector< std::vector<double> > & ResMat = NewMat._Matrix;
     std::transform(_Matrix.begin(),_Matrix.end(),ResMat.begin(),
-    [Val](const std::vector<double> & VecA){
-        std::vector<double> ResVec(VecA.size());   
-        std::transform(VecA.begin(),VecA.end(),ResVec.begin(),
-            [Val](double ValA){
-                return ValA * Val;
+    [Mul](const std::vector<double> & Vec){
+        std::vector<double> ResVec(Vec.size());   
+        std::transform(Vec.begin(),Vec.end(),ResVec.begin(),
+            [Mul](double Val){
+                return Val * Mul;
             });
         return ResVec;
     });
     return NewMat;
 }
-mmatrix& mmatrix::operator/(const double Val) const{
+mmatrix& mmatrix::operator/(const double Mul) const{
     mmatrix NewMat(_Dimensions, 0);
     std::vector< std::vector<double> > & ResMat = NewMat._Matrix;
     std::transform(_Matrix.begin(),_Matrix.end(),ResMat.begin(),
-    [Val](const std::vector<double> & VecA){
-        std::vector<double> ResVec(VecA.size());   
-        std::transform(VecA.begin(),VecA.end(),ResVec.begin(),
-            [Val](double ValA){
-                return ValA / Val;
+    [Mul](const std::vector<double> & Vec){
+        std::vector<double> ResVec(Vec.size());   
+        std::transform(Vec.begin(),Vec.end(),ResVec.begin(),
+            [Mul](double Val){
+                return Val / Mul;
             });
         return ResVec;
     });
@@ -284,7 +284,7 @@ mmatrix& mmatrix::operator=(const mmatrix & Mat){
 
 
 mmatrix& mmatrix::transpose() const{
-    
+
 }
 void mmatrix::transpose() const{
 
