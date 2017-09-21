@@ -3,8 +3,12 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include <functional>
 #include <iterator>
+#include <numeric>
+#include <omp.h>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 #include "mdimension.hpp"
@@ -60,8 +64,8 @@ class mmatrix{
         mmatrix& operator*=(const double Val);
         mmatrix& operator/=(const double Val);
 
-        mmatrix operator*(const mmatrix && Mat) const;
-        mmatrix operator*(const mmatrix & Mat) const;
+        mmatrix operator*(mmatrix && Mat);
+        mmatrix operator*(mmatrix & Mat);
         mmatrix operator*(const double Val) const;
         mmatrix operator/(const double Val) const;
 
@@ -69,7 +73,7 @@ class mmatrix{
         mmatrix& operator=(const mmatrix & Mat);
 
 
-        mmatrix transpose() const;
+        mmatrix transposition();
         void transpose();
         mmatrix entry_mult(const mmatrix && Mat);
         mmatrix entry_mult(const mmatrix & Mat);
@@ -77,6 +81,8 @@ class mmatrix{
         mmatrix& equal_entry_mult(const mmatrix & Mat);
         mmatrix eigen_vectors() const;
         std::vector<double> eigen_values() const;
+
+        std::string to_string(char Delimiter = ' ', char Separator = '\n', char Border = 0);
 
         mdimension dimension() const;
         mdimension size() const;

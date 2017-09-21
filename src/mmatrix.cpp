@@ -32,9 +32,12 @@ void mmatrix::push_back_row(const std::vector<double> && Mat, bool EnsureSize){
     push_back_row(Mat, EnsureSize);
 }
 void mmatrix::push_back_row(const std::vector<double> & Mat, bool EnsureSize){
-    if(_Dimensions._Col != Mat.size()){
+    if(_Dimensions._Col != Mat.size() && _Dimensions._Col != 0){
         throw std::out_of_range("Matrix col-dimensions "+ _Dimensions.to_string()
             + " and [1x" + std::to_string(Mat.size()) + " are not conforming.");
+    }
+    if( _Dimensions._Col == 0){
+        _Dimensions._Col = Mat.size();
     }
     _Matrix.push_back(Mat);
     _Dimensions._Row++;
@@ -43,9 +46,13 @@ void mmatrix::push_back_col(const std::vector<double> && Mat, bool EnsureSize){
     push_back_col(Mat, EnsureSize);
 }
 void mmatrix::push_back_col(const std::vector<double> & Mat, bool EnsureSize){
-    if(_Dimensions._Row != Mat.size()){
+    if(_Dimensions._Row != Mat.size() && _Dimensions._Row != 0){
         throw std::out_of_range("Matrix row-dimensions "+ _Dimensions.to_string()
             + " and [1x" + std::to_string(Mat.size()) + " are not conforming.");
+    }
+    if(_Dimensions._Row == 0){
+        _Dimensions._Row = Mat.size();
+        _Matrix.resize(Mat.size());
     }
     std::transform(_Matrix.begin(),_Matrix.end(),Mat.begin(),_Matrix.begin(),[](std::vector<double> & Vec, double Val){
         Vec.push_back(Val);
@@ -245,13 +252,33 @@ mmatrix& mmatrix::operator/=(const double Mul){
     return *this;
 }
 
-mmatrix mmatrix::operator*(const mmatrix && Mat) const{
+mmatrix mmatrix::operator*( mmatrix && Mat){
     return operator*(Mat);
 }
-mmatrix mmatrix::operator*(const mmatrix & Mat) const{
+mmatrix mmatrix::operator*(mmatrix & Mat){
     mdimension NewDim = _Dimensions*Mat._Dimensions;
     mmatrix NewMat(NewDim);
+    auto & MatL = _Matrix;
+    auto MatR = Mat._Matrix;
+    std::vector< std::vector<double> > & MultMat = NewMat._Matrix;
 
+    std::vector<std::vector<double>::iterator> IterVec(MatR.size());
+    std::transform(MatR.begin(), MatR.end(), IterVec.begin(), [](std::vector<double> & Vec){
+        return Vec.begin();
+    });
+
+    std::transform(MatL.begin(), MatL.end(), MultMat.begin(), [&](std::vector<double> & Vec){
+        std::vector<double> Row(NewDim._Col);
+        auto CopyIter = IterVec;
+        std::transform(Row.begin(),Row.end(),Row.begin(),[&CopyIter,Vec](double Init){
+            double IP = std::inner_product(Vec.begin(),Vec.end(),CopyIter.begin(),Init,std::plus<double>(),[](double Val, std::vector<double>::iterator & Iter){
+                return Val* (*Iter++);
+            });
+            return IP;
+        });
+        return Row;
+    });
+    return NewMat;
 }
 mmatrix mmatrix::operator*(const double Mul) const{
     mmatrix NewMat(_Dimensions, 0);
@@ -292,14 +319,35 @@ mmatrix& mmatrix::operator=(const mmatrix & Mat){
 }
 
 
-mmatrix mmatrix::transpose() const{
+mmatrix mmatrix::transposition(){
     mdimension NewDim(_Dimensions._Col,_Dimensions._Row);
     mmatrix NewMat(NewDim,0);
-    //std::transform(_Matrix.begin(),_Matrix.end(),NewMat._Matrix.begin(),[]());
+    std::vector< std::vector<double> > & MatrixT = NewMat._Matrix;
+    std::vector<std::vector<double>::iterator> IterVec(_Matrix.size());
+    std::transform(_Matrix.begin(),_Matrix.end(),IterVec.begin(),[](std::vector<double> & Vec){
+        return Vec.begin();
+    });
+    std::transform(MatrixT.begin(),MatrixT.end(),MatrixT.begin(),[&IterVec](std::vector<double> & Vec){
+        std::transform(IterVec.begin(),IterVec.end(),Vec.begin(),[](std::vector<double>::iterator & It){
+            return std::move(*It++);
+        });
+        return Vec;
+    });
+    // #pragma omp parallel
+    // {
+    //     #pragma omp for
+    //     for(int j = 0; j < Col; j++){
+    //         for(int i = 0; i < Row; i++){
+    //             MatrixT[j][i] = std::move(_Matrix[i][j]);
+    //         }
+    //     }
+    // }
     return NewMat;
 }
 void mmatrix::transpose(){
-
+    mmatrix NewMat = transposition();
+    std::swap(_Dimensions,NewMat._Dimensions);
+    std::swap(_Matrix,NewMat._Matrix);
 }
 mmatrix mmatrix::entry_mult(const mmatrix && Mat){
     return entry_mult(Mat);
@@ -338,6 +386,19 @@ mmatrix mmatrix::eigen_vectors() const{
 }
 std::vector<double> mmatrix::eigen_values() const{
     return std::vector<double>();
+}
+
+std::string mmatrix::to_string(char Delimiter, char Separator,  char Border){
+    std::string MatStr;
+    for(auto & Row : _Matrix){
+        MatStr += Border;
+        for(auto & Sgn : Row){
+            MatStr += std::to_string(Sgn) + Delimiter;
+        }
+        MatStr[MatStr.size()-1] = Border;
+        MatStr += Separator;
+    }
+    return MatStr;
 }
 
 mdimension mmatrix::dimension() const{
