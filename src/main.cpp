@@ -10,22 +10,27 @@
 #include "mmatrix.hpp"
 
 int main(){
-    std::vector<double> A = {1,2,3}, B = {4,5,6};
-    std::vector<double> C = {1,2}, D = {3,4}, E = {5,6};
+
 
     mmatrix MatA(0), MatB(0), MatC(0);
-    MatA.push_back(A);
-    MatA.push_back(B);
-
-    MatB.push_back(C);
-    MatB.push_back(D);
-    MatB.push_back(E);
 
 
-    std::cout << MatA.to_string() << std::endl;
-    std::cout << MatB.to_string() << std::endl;
+    std::size_t Row = 4089, Col = 4089;
 
-    MatC = MatB*MatA;
+    for(int i = 0; i < Row; i++){
+        std::vector<double> Tmp(Col,0);
+        std::iota(Tmp.begin(),Tmp.end(),i);
+        MatA.push_back(Tmp);
+    }
 
-    std::cout << MatC.to_string() << std::endl;
+    for(int i = 0; i < Col; i++){
+        std::vector<double> Tmp(Row,0);
+        std::iota(Tmp.begin(),Tmp.end(),i);
+        MatB.push_back(Tmp);
+    }
+
+
+    MatC = MatA*MatB;
+
+    //std::cout << MatC.to_string() << std::endl;
 }
