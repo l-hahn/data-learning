@@ -6,7 +6,7 @@
 #include "mmatrix.hpp"
 
 int main(){
-    std::size_t Row = 10, Col = 3;
+    std::size_t Row = 1000, Col = 1000;
     mdimension Dim(Row,Col);
     mmatrix Mat(Dim,0), MatR;
     for(int i = 0; i < Row; i++){
@@ -15,10 +15,4 @@ int main(){
         Mat[i] = MRow;
     }
     MatR = Mat+Mat;
-    for(int i = 0; i < Row; i++){
-        for(auto & Val: Mat[i]){
-            std::cout << Val << " ";
-        }
-        std::cout << std::endl;
-    }
 }
