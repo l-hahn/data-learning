@@ -25,13 +25,13 @@ class mdimension{
         bool operator==(const mdimension & Dim) const;
         bool operator!=(const mdimension & Dim) const;
 
-        mdimension operator=(const mdimension && Dim);
-        mdimension operator=(const mdimension & Dim);
+        mdimension& operator=(const mdimension && Dim);
+        mdimension& operator=(const mdimension & Dim);
 
         mdimension operator*(const mdimension && DimL) const;
-        mdimension operator*=(const mdimension && DimL);
+        mdimension& operator*=(const mdimension && DimL);
         mdimension operator*(const mdimension & DimL) const;
-        mdimension operator*=(const mdimension & DimL);
+        mdimension& operator*=(const mdimension & DimL);
 
         // size(Mat) == _Row x _Col
         size_t _Row;

@@ -45,10 +45,10 @@ bool mdimension::operator!=(const mdimension & Dim) const{
     return (_Row - Dim._Row + _Col - Dim._Col) != 0;   
 }
 
-mdimension mdimension::operator=(const mdimension && Dim){
+mdimension& mdimension::operator=(const mdimension && Dim){
     return operator=(Dim);
 }
-mdimension mdimension::operator=(const mdimension & Dim){
+mdimension& mdimension::operator=(const mdimension & Dim){
     _Row = Dim._Row;
     _Col = Dim._Col;
     return *this;
@@ -57,7 +57,7 @@ mdimension mdimension::operator=(const mdimension & Dim){
 mdimension mdimension::operator*(const mdimension && Dim) const{
     return operator*(Dim);
 }
-mdimension mdimension::operator*=(const mdimension && Dim){
+mdimension& mdimension::operator*=(const mdimension && Dim){
     return operator*=(Dim);
 }
 mdimension mdimension::operator*(const mdimension & Dim) const{
@@ -73,7 +73,7 @@ mdimension mdimension::operator*(const mdimension & Dim) const{
     }
     return NewDim;
 }
-mdimension mdimension::operator*=(const mdimension & Dim){
+mdimension& mdimension::operator*=(const mdimension & Dim){
     if((_Col - Dim._Row) == 0){
         _Col = Dim._Col;
     }

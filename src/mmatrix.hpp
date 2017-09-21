@@ -15,6 +15,8 @@ class mmatrix{
         mmatrix(size_t Row, size_t Col, double Val = 0);
         mmatrix(const mdimension & Dim, double Val = 0);
         mmatrix(const mdimension && Dim, double Val = 0);
+        mmatrix(const mmatrix && Mat);
+        mmatrix(const mmatrix & Mat);
 
 
         void push_back(const std::vector<double> && ValList, bool EnsureSize = false);
@@ -25,12 +27,12 @@ class mmatrix{
         void push_back_col(const std::vector<double> & ValList, bool EnsureSize = false);
 
         void resize(size_t NewSize, double Val = 0);
-        void resize(size_t NewRow, NewCol, double Val = 0);
+        void resize(size_t NewRow, size_t NewCol, double Val = 0);
         void resize(const mdimension && Dim, double Val = 0);
         void resize(const mdimension & Dim, double Val = 0);
 
         void reserve(size_t NewSize);
-        void reserve(size_t NewRow, NewCol);
+        void reserve(size_t NewRow, size_t NewCol);
         void reserve(const mdimension && Dim);
         void reserve(const mdimension & Dim);
 
@@ -46,34 +48,34 @@ class mmatrix{
         mmatrix& operator+=(const double Val);
         mmatrix& operator-=(const double Val);
 
-        mmatrix& operator+(const mmatrix && Mat) const;
-        mmatrix& operator-(const mmatrix && Mat) const;
-        mmatrix& operator+(const mmatrix & Mat) const;
-        mmatrix& operator-(const mmatrix & Mat) const;
-        mmatrix& operator+(const double Val) const;
-        mmatrix& operator-(const double Val) const;
+        mmatrix operator+(const mmatrix && Mat) const;
+        mmatrix operator-(const mmatrix && Mat) const;
+        mmatrix operator+(const mmatrix & Mat) const;
+        mmatrix operator-(const mmatrix & Mat) const;
+        mmatrix operator+(const double Val) const;
+        mmatrix operator-(const double Val) const;
 
         mmatrix& operator*=(const mmatrix && Mat);
         mmatrix& operator*=(const mmatrix & Mat);
         mmatrix& operator*=(const double Val);
         mmatrix& operator/=(const double Val);
 
-        mmatrix& operator*(const mmatrix && Mat) const;
-        mmatrix& operator*(const mmatrix & Mat) const;
-        mmatrix& operator*(const double Val) const;
-        mmatrix& operator/(const double Val) const;
+        mmatrix operator*(const mmatrix && Mat) const;
+        mmatrix operator*(const mmatrix & Mat) const;
+        mmatrix operator*(const double Val) const;
+        mmatrix operator/(const double Val) const;
 
         mmatrix& operator=(const mmatrix && Mat);
         mmatrix& operator=(const mmatrix & Mat);
 
 
-        mmatrix& transpose() const;
+        mmatrix transpose() const;
         void transpose();
-        mmatrix& entry_mult(const mmatrix && Mat);
-        mmatrix& entry_mult(const mmatrix & Mat);
+        mmatrix entry_mult(const mmatrix && Mat);
+        mmatrix entry_mult(const mmatrix & Mat);
         mmatrix& equal_entry_mult(const mmatrix && Mat);
         mmatrix& equal_entry_mult(const mmatrix & Mat);
-        mmatrix& eigen_vectors() const;
+        mmatrix eigen_vectors() const;
         std::vector<double> eigen_values() const;
 
         mdimension dimension() const;
@@ -84,7 +86,7 @@ class mmatrix{
 
 
     private:
-        std::vector< std::vector<double> > _Matrix
+        std::vector< std::vector<double> > _Matrix;
         mdimension _Dimensions;
 };
 
