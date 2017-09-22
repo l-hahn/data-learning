@@ -74,7 +74,7 @@ class mmatrix{
 
 
         mmatrix transposition();
-        void transpose();
+        mmatrix& transpose();
         mmatrix entry_mult(const mmatrix && Mat);
         mmatrix entry_mult(const mmatrix & Mat);
         mmatrix& equal_entry_mult(const mmatrix && Mat);

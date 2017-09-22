@@ -32,5 +32,8 @@ int main(){
     MatC *= MatB;
     std::cout << std::endl << MatC.to_string() << std::endl;
     MatC.transpose();
+    MatC[0][1] = -5;
+    std::cout << std::endl << MatC.to_string() << std::endl;
+    MatC.transpose();
     std::cout << std::endl << MatC.to_string() << std::endl;
 }

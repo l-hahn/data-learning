@@ -372,15 +372,20 @@ mmatrix mmatrix::transposition(){
     std::vector< std::vector<double> > & MatrixT = NewMat._Matrix;
 
     std::transform(_MatrixT.begin(),_MatrixT.end(), MatrixT.begin(),[](std::vector< std::reference_wrapper<double> > & Vec){
-        return std::vector<double>(Vec.begin(),Vec.end());
+        return std::vector<double>(std::move(Vec.begin()),std::move(Vec.end()));
     });
     NewMat.create_col_wrapper();
     return NewMat;
 }
-void mmatrix::transpose(){
-    mmatrix NewMat = transposition();
-    std::swap(_Dimensions,NewMat._Dimensions);
-    std::swap(_Matrix,NewMat._Matrix);
+mmatrix& mmatrix::transpose(){
+    _Dimensions = _DimensionsT;
+    std::vector< std::vector<double> > MatrixT(_Dimensions.Row, std::vector<double>(_Dimensions.Col));
+    std::transform(_MatrixT.begin(),_MatrixT.end(), MatrixT.begin(),[](std::vector< std::reference_wrapper<double> > & Vec){
+        return std::vector<double>(std::move(Vec.begin()),std::move(Vec.end()));
+    });
+    std::swap(_Matrix,MatrixT);
+    create_col_wrapper();
+    return *this;
 }
 mmatrix mmatrix::entry_mult(const mmatrix && Mat){
     return entry_mult(Mat);
