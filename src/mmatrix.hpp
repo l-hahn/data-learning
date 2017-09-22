@@ -59,8 +59,8 @@ class mmatrix{
         mmatrix operator+(const double Val) const;
         mmatrix operator-(const double Val) const;
 
-        mmatrix& operator*=(const mmatrix && Mat);
-        mmatrix& operator*=(const mmatrix & Mat);
+        mmatrix& operator*=(mmatrix && Mat);
+        mmatrix& operator*=(mmatrix & Mat);
         mmatrix& operator*=(const double Val);
         mmatrix& operator/=(const double Val);
 

@@ -258,11 +258,28 @@ mmatrix mmatrix::operator-(const double Add) const{
     return NewMat;
 }
 
-mmatrix& mmatrix::operator*=(const mmatrix && Mat){
+mmatrix& mmatrix::operator*=(mmatrix && Mat){
     return operator*=(Mat);
 }
-mmatrix& mmatrix::operator*=(const mmatrix & Mat){
+mmatrix& mmatrix::operator*=(mmatrix & Mat){
+    mdimension NewDim = _Dimensions*Mat._Dimensions;
+    auto & MatL = _Matrix;
+    auto & MatR = Mat._MatrixT;
 
+    std::vector< std::vector<double> > MultMat(NewDim.Row, std::vector<double>(NewDim.Col));
+
+    std::transform(MatL.begin(),MatL.end(),MultMat.begin(),[&](std::vector<double> & VecL){
+        std::vector<double> Row(NewDim.Row);
+        std::transform(Row.begin(),Row.end(),MatR.begin(),Row.begin(),[&](double Init, std::vector< std::reference_wrapper<double> > & VecR){
+            return std::inner_product(VecL.begin(),VecL.end(),VecR.begin(),Init);
+        });
+        return Row;
+    });
+    std::swap(NewDim,_Dimensions);
+    std::swap(MatL,MultMat);
+    create_col_wrapper();
+
+    return *this;
 }
 mmatrix& mmatrix::operator*=(const double Mul){
     std::transform(_Matrix.begin(),_Matrix.end(),_Matrix.begin(),
@@ -288,32 +305,24 @@ mmatrix& mmatrix::operator/=(const double Mul){
     return *this;
 }
 
-mmatrix mmatrix::operator*( mmatrix && Mat){
+mmatrix mmatrix::operator*(mmatrix && Mat){
     return operator*(Mat);
 }
 mmatrix mmatrix::operator*(mmatrix & Mat){
     mdimension NewDim = _Dimensions*Mat._Dimensions;
     mmatrix NewMat(NewDim);
     auto & MatL = _Matrix;
-    auto MatR = Mat._Matrix;
+    auto MatR = Mat._MatrixT;
     std::vector< std::vector<double> > & MultMat = NewMat._Matrix;
 
-    std::vector<std::vector<double>::iterator> IterVec(MatR.size());
-    std::transform(MatR.begin(), MatR.end(), IterVec.begin(), [](std::vector<double> & Vec){
-        return Vec.begin();
-    });
-
-    std::transform(MatL.begin(), MatL.end(), MultMat.begin(), [&](std::vector<double> & Vec){
-        std::vector<double> Row(NewDim.Col);
-        auto CopyIter = IterVec;
-        std::transform(Row.begin(),Row.end(),Row.begin(),[&CopyIter,Vec](double Init){
-            double IP = std::inner_product(Vec.begin(),Vec.end(),CopyIter.begin(),Init,std::plus<double>(),[](double Val, std::vector<double>::iterator & Iter){
-                return Val* (*Iter++);
-            });
-            return IP;
+    std::transform(MatL.begin(),MatL.end(),MultMat.begin(),[&](std::vector<double> & VecL){
+        std::vector<double> Row(NewDim.Row);
+        std::transform(Row.begin(),Row.end(),MatR.begin(),Row.begin(),[&](double Init, std::vector< std::reference_wrapper<double> > & VecR){
+            return std::inner_product(VecL.begin(),VecL.end(),VecR.begin(),Init);
         });
         return Row;
     });
+    NewMat.create_col_wrapper();
     return NewMat;
 }
 mmatrix mmatrix::operator*(const double Mul) const{
@@ -361,25 +370,11 @@ mmatrix mmatrix::transposition(){
     mdimension NewDim(_Dimensions.Col,_Dimensions.Row);
     mmatrix NewMat(NewDim,0);
     std::vector< std::vector<double> > & MatrixT = NewMat._Matrix;
-    std::vector<std::vector<double>::iterator> IterVec(_Matrix.size());
-    std::transform(_Matrix.begin(),_Matrix.end(),IterVec.begin(),[](std::vector<double> & Vec){
-        return Vec.begin();
+
+    std::transform(_MatrixT.begin(),_MatrixT.end(), MatrixT.begin(),[](std::vector< std::reference_wrapper<double> > & Vec){
+        return std::vector<double>(Vec.begin(),Vec.end());
     });
-    std::transform(MatrixT.begin(),MatrixT.end(),MatrixT.begin(),[&IterVec](std::vector<double> & Vec){
-        std::transform(IterVec.begin(),IterVec.end(),Vec.begin(),[](std::vector<double>::iterator & It){
-            return std::move(*It++);
-        });
-        return Vec;
-    });
-    // #pragma omp parallel
-    // {
-    //     #pragma omp for
-    //     for(int j = 0; j < Col; j++){
-    //         for(int i = 0; i < Row; i++){
-    //             MatrixT[j][i] = std::move(_Matrix[i][j]);
-    //         }
-    //     }
-    // }
+    NewMat.create_col_wrapper();
     return NewMat;
 }
 void mmatrix::transpose(){

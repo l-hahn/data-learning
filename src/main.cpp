@@ -25,9 +25,12 @@ int main(){
     MatB.push_back(_MatrixT[2]);
     MatB.push_back(_MatrixT[3]);
 
-    MatC = MatA * MatA.transposition();
+    std::cout << MatA.to_string() << std::endl << std::endl;
+    std::cout << MatB.to_string() << std::endl << std::endl;
 
-    std::cout << MatA.to_string() << std::endl;
-    std::cout << std::endl;
-    std::cout << MatC.to_string() << std::endl;
+    MatC = MatA;
+    MatC *= MatB;
+    std::cout << std::endl << MatC.to_string() << std::endl;
+    MatC.transpose();
+    std::cout << std::endl << MatC.to_string() << std::endl;
 }
