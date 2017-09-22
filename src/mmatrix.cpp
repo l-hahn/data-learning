@@ -455,8 +455,6 @@ size_t mmatrix::col_size() const{
 void mmatrix::create_col_wrapper(){
     _MatrixT.clear();
     _DimensionsT = mdimension(_Dimensions.Col,_Dimensions.Row);
-
- 
     std::vector<std::vector<double>::iterator> IterVec(_Dimensions.Row);
     std::transform(_Matrix.begin(),_Matrix.end(),IterVec.begin(),[](std::vector<double> & Vec){
         return Vec.begin();

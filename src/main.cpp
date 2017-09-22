@@ -16,24 +16,34 @@ int main(){
     std::vector< std::vector<double> > _MatrixT = {{1,2,3},{4,5,6},{7,8,9},{0,1,2}};
     mmatrix MatA, MatB, MatC;
 
-    MatA.push_back(_Matrix[0]);
-    MatA.push_back(_Matrix[1]);
-    MatA.push_back(_Matrix[2]);
+    std::size_t Row = 10000;
+    std::size_t Col = 10;
 
-    MatB.push_back(_MatrixT[0]);
-    MatB.push_back(_MatrixT[1]);
-    MatB.push_back(_MatrixT[2]);
-    MatB.push_back(_MatrixT[3]);
+    MatA = mmatrix(Col,Row,2);
+    MatB = mmatrix(Row,Col,3);
+    MatC = MatA*MatB;
+    std::cout << MatC.to_string() << std::endl;
 
-    std::cout << MatA.to_string() << std::endl << std::endl;
-    std::cout << MatB.to_string() << std::endl << std::endl;
+    // MatA.push_back(_Matrix[0]);
+    // MatA.push_back(_Matrix[1]);
+    // MatA.push_back(_Matrix[2]);
 
-    MatC = MatA;
-    MatC *= MatB;
-    std::cout << std::endl << MatC.to_string() << std::endl;
-    MatC.transpose();
-    MatC[0][1] = -5;
-    std::cout << std::endl << MatC.to_string() << std::endl;
-    MatC.transpose();
-    std::cout << std::endl << MatC.to_string() << std::endl;
+    // MatB.push_back(_MatrixT[0]);
+    // MatB.push_back(_MatrixT[1]);
+    // MatB.push_back(_MatrixT[2]);
+    // MatB.push_back(_MatrixT[3]);
+
+    // std::cout << MatA.to_string() << std::endl << std::endl;
+    // std::cout << MatB.to_string() << std::endl << std::endl;
+
+    // MatC = MatA;
+    // MatC *= MatB;
+    // std::cout << std::endl << MatC.to_string() << std::endl;
+    // MatC.transpose();
+    // MatC[0][1] = -5;
+    // std::cout << std::endl << MatC.to_string() << std::endl;
+    // MatC.transpose();
+    // std::cout << std::endl << MatC.to_string() << std::endl;
+    // MatC += MatC;
+    // std::cout << std::endl << MatC.to_string() << std::endl;
 }
