@@ -12,7 +12,7 @@ class mdimension{
     public:
         mdimension();
         mdimension(size_t Size);
-        mdimension(size_t Row, size_t Col);
+        mdimension(size_t R, size_t C);
         mdimension(const mdimension & Dim);
         mdimension(const mdimension && Dim);
 
@@ -34,8 +34,8 @@ class mdimension{
         mdimension& operator*=(const mdimension & DimL);
 
         // size(Mat) == _Row x _Col
-        size_t _Row;
-        size_t _Col;
+        size_t Row;
+        size_t Col;
 };
 
 #endif

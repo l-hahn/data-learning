@@ -92,8 +92,11 @@ class mmatrix{
 
 
     private:
+        void create_col_wrapper();
         std::vector< std::vector<double> > _Matrix;
+        std::vector< std::vector< std::reference_wrapper<double> > > _MatrixT;
         mdimension _Dimensions;
+        mdimension _DimensionsT;
 };
 
 #endif

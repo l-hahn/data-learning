@@ -1,34 +1,34 @@
 #include "mdimension.hpp"
 
-mdimension::mdimension():_Row(0),_Col(0){
+mdimension::mdimension():Row(0),Col(0){
 }
-mdimension::mdimension(size_t Size):_Row(Size),_Col(Size){
+mdimension::mdimension(size_t Size):Row(Size),Col(Size){
 }
-mdimension::mdimension(size_t Row, size_t Col):_Row(Row),_Col(Col){
+mdimension::mdimension(size_t R, size_t C):Row(R),Col(C){
 }
 mdimension::mdimension(const mdimension & Dim){
-    _Row = Dim._Row;
-    _Col = Dim._Col;
+    Row = Dim.Row;
+    Col = Dim.Col;
 }
 mdimension::mdimension(const mdimension && Dim){
-    _Row = Dim._Row;
-    _Col = Dim._Col;
+    Row = Dim.Row;
+    Col = Dim.Col;
 }
 
 
 std::string mdimension::to_string() const{
-    std::string Str = "[" + std::to_string(_Row) + "x"+std::to_string(_Col) + "]";
+    std::string Str = "[" + std::to_string(Row) + "x"+std::to_string(Col) + "]";
     return Str;
 }
 
 bool mdimension::empty() const{
-    return ((_Row + _Col) == 0);
+    return ((Row + Col) == 0);
 }
 
 void mdimension::swap(){
-    size_t Tmp = std::move(_Row);
-    _Row = std::move(_Col);
-    _Col = std::move(Tmp);
+    size_t Tmp = std::move(Row);
+    Row = std::move(Col);
+    Col = std::move(Tmp);
 }
 
 
@@ -39,18 +39,18 @@ bool mdimension::operator!=(const mdimension && Dim) const{
     return operator!=(Dim);
 }
 bool mdimension::operator==(const mdimension & Dim) const{
-    return (_Row - Dim._Row + _Col - Dim._Col) == 0;
+    return (Row - Dim.Row + Col - Dim.Col) == 0;
 }
 bool mdimension::operator!=(const mdimension & Dim) const{
-    return (_Row - Dim._Row + _Col - Dim._Col) != 0;   
+    return (Row - Dim.Row + Col - Dim.Col) != 0;   
 }
 
 mdimension& mdimension::operator=(const mdimension && Dim){
     return operator=(Dim);
 }
 mdimension& mdimension::operator=(const mdimension & Dim){
-    _Row = Dim._Row;
-    _Col = Dim._Col;
+    Row = Dim.Row;
+    Col = Dim.Col;
     return *this;
 }
 
@@ -62,25 +62,25 @@ mdimension& mdimension::operator*=(const mdimension && Dim){
 }
 mdimension mdimension::operator*(const mdimension & Dim) const{
     mdimension NewDim(0);
-    if((_Col - Dim._Row) == 0){
-        NewDim._Row = _Row;
-        NewDim._Col = Dim._Col;
+    if((Col - Dim.Row) == 0){
+        NewDim.Row = Row;
+        NewDim.Col = Dim.Col;
     }
     else{
         throw std::out_of_range("Matrix dimensions "+to_string() + " * "
-            + Dim.to_string() + " are not conforming, " + std::to_string(_Col)
-            + " != " +std::to_string(Dim._Row) + ".");
+            + Dim.to_string() + " are not conforming, " + std::to_string(Col)
+            + " != " +std::to_string(Dim.Row) + ".");
     }
     return NewDim;
 }
 mdimension& mdimension::operator*=(const mdimension & Dim){
-    if((_Col - Dim._Row) == 0){
-        _Col = Dim._Col;
+    if((Col - Dim.Row) == 0){
+        Col = Dim.Col;
     }
     else{
         throw std::out_of_range("Matrix dimensions "+to_string() + " * "
-            + Dim.to_string() + " are not conforming, " + std::to_string(_Col)
-            + " != " +std::to_string(Dim._Row) + ".");
+            + Dim.to_string() + " are not conforming, " + std::to_string(Col)
+            + " != " +std::to_string(Dim.Row) + ".");
     }
     return *this;
 }

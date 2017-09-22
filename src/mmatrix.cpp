@@ -1,7 +1,8 @@
 #include "mmatrix.hpp"
 
 mmatrix::mmatrix(){
-    _Dimensions._Row = 0, _Dimensions._Col = 0;
+    _Dimensions = mdimension(0);
+    _DimensionsT = mdimension(_Dimensions.Col,_Dimensions.Row);
 }
 mmatrix::mmatrix(size_t Row, size_t Col, double Val){
     resize(Row,Col,Val);
@@ -15,10 +16,13 @@ mmatrix::mmatrix(const mdimension && Dim, double Val){
 mmatrix::mmatrix(const mmatrix && Mat){
     _Matrix = Mat._Matrix;
     _Dimensions = Mat._Dimensions;
+    create_col_wrapper();
+
 }
 mmatrix::mmatrix(const mmatrix & Mat){
     _Matrix = Mat._Matrix;
     _Dimensions = Mat._Dimensions;
+    create_col_wrapper();
 }
 
 
@@ -32,33 +36,57 @@ void mmatrix::push_back_row(const std::vector<double> && Mat, bool EnsureSize){
     push_back_row(Mat, EnsureSize);
 }
 void mmatrix::push_back_row(const std::vector<double> & Mat, bool EnsureSize){
-    if(_Dimensions._Col != Mat.size() && _Dimensions._Col != 0){
+    if(_Dimensions.Col != Mat.size() && _Dimensions.Col != 0){
         throw std::out_of_range("Matrix col-dimensions "+ _Dimensions.to_string()
             + " and [1x" + std::to_string(Mat.size()) + " are not conforming.");
     }
-    if( _Dimensions._Col == 0){
-        _Dimensions._Col = Mat.size();
+    if( _Dimensions.Col == 0){
+        _Dimensions.Col = Mat.size();
     }
     _Matrix.push_back(Mat);
-    _Dimensions._Row++;
+    _Dimensions.Row++;
+
+    if(_DimensionsT.Row == 0){
+        _MatrixT.resize(Mat.size());
+    }
+    std::transform(_MatrixT.begin(),_MatrixT.end(),(_Matrix.end()-1)->begin(),_MatrixT.begin(),[](std::vector<std::reference_wrapper<double> > & Vec, double & Val){
+        Vec.push_back(std::ref(Val));
+        return Vec;
+    });
+    // auto Val = (_Matrix.end()-1)->begin();
+    // for(auto & Vec : _MatrixT){
+    //     Vec.push_back(std::ref(*Val++));
+    // }
+    _DimensionsT.Col++;
+
 }
 void mmatrix::push_back_col(const std::vector<double> && Mat, bool EnsureSize){
     push_back_col(Mat, EnsureSize);
 }
 void mmatrix::push_back_col(const std::vector<double> & Mat, bool EnsureSize){
-    if(_Dimensions._Row != Mat.size() && _Dimensions._Row != 0){
+    if(_Dimensions.Row != Mat.size() && _Dimensions.Row != 0){
         throw std::out_of_range("Matrix row-dimensions "+ _Dimensions.to_string()
             + " and [1x" + std::to_string(Mat.size()) + " are not conforming.");
     }
-    if(_Dimensions._Row == 0){
-        _Dimensions._Row = Mat.size();
+    if(_Dimensions.Row == 0){
+        _Dimensions.Row = Mat.size();
         _Matrix.resize(Mat.size());
     }
     std::transform(_Matrix.begin(),_Matrix.end(),Mat.begin(),_Matrix.begin(),[](std::vector<double> & Vec, double Val){
         Vec.push_back(Val);
         return Vec;
     });
-    _Dimensions._Col++;
+    _Dimensions.Col++;
+
+    if(_DimensionsT.Col == 0){
+        _MatrixT.resize(1);
+    }
+
+    _DimensionsT.Row++;
+    _MatrixT.resize(_DimensionsT.Row);
+    std::transform(_Matrix.begin(),_Matrix.end(),std::back_inserter(*(_MatrixT.end()-1)),[](std::vector<double> & Vec){
+        return std::ref(*(Vec.end()-1));
+    });
 }
 
 void mmatrix::resize(size_t NewSize, double Val){
@@ -71,12 +99,13 @@ void mmatrix::resize(const mdimension && Dim, double Val){
     resize(Dim,Val);
 }
 void mmatrix::resize(const mdimension & Dim, double Val){
-    _Matrix.resize(Dim._Row);
+    _Matrix.resize(Dim.Row);
     std::transform(_Matrix.begin(),_Matrix.end(),_Matrix.begin(),[&Dim, Val](std::vector<double> & Vec){
-        Vec.resize(Dim._Col,Val);
+        Vec.resize(Dim.Col,Val);
         return Vec;
     });
     _Dimensions = Dim;
+    create_col_wrapper();
 }
 
 void mmatrix::reserve(size_t NewSize){
@@ -89,16 +118,23 @@ void mmatrix::reserve(const mdimension && Dim){
     reserve(Dim);
 }
 void mmatrix::reserve(const mdimension & Dim){
-    _Matrix.reserve(Dim._Row);
+    _Matrix.reserve(Dim.Row);
     std::transform(_Matrix.begin(),_Matrix.end(),_Matrix.begin(),[&Dim](std::vector<double> & Vec){
-        Vec.resize(Dim._Col);
+        Vec.reserve(Dim.Col);
+        return Vec;
+    });
+    _MatrixT.reserve(Dim.Col);
+    std::transform(_MatrixT.begin(),_MatrixT.end(),_MatrixT.begin(),[&Dim](std::vector< std::reference_wrapper<double> > & Vec){
+        Vec.reserve(Dim.Row);
         return Vec;
     });
 }
 
 void mmatrix::clear() noexcept{
+    _MatrixT.clear();
     _Matrix.clear();
     _Dimensions = mdimension(0);
+    _DimensionsT = mdimension(0);
 }
 
 
@@ -268,7 +304,7 @@ mmatrix mmatrix::operator*(mmatrix & Mat){
     });
 
     std::transform(MatL.begin(), MatL.end(), MultMat.begin(), [&](std::vector<double> & Vec){
-        std::vector<double> Row(NewDim._Col);
+        std::vector<double> Row(NewDim.Col);
         auto CopyIter = IterVec;
         std::transform(Row.begin(),Row.end(),Row.begin(),[&CopyIter,Vec](double Init){
             double IP = std::inner_product(Vec.begin(),Vec.end(),CopyIter.begin(),Init,std::plus<double>(),[](double Val, std::vector<double>::iterator & Iter){
@@ -314,13 +350,15 @@ mmatrix& mmatrix::operator=(const mmatrix && Mat){
 }
 mmatrix& mmatrix::operator=(const mmatrix & Mat){
     _Dimensions = Mat._Dimensions;
+    _DimensionsT = Mat._DimensionsT;
     _Matrix = Mat._Matrix;
+    create_col_wrapper();
     return *this;
 }
 
 
 mmatrix mmatrix::transposition(){
-    mdimension NewDim(_Dimensions._Col,_Dimensions._Row);
+    mdimension NewDim(_Dimensions.Col,_Dimensions.Row);
     mmatrix NewMat(NewDim,0);
     std::vector< std::vector<double> > & MatrixT = NewMat._Matrix;
     std::vector<std::vector<double>::iterator> IterVec(_Matrix.size());
@@ -408,8 +446,28 @@ mdimension mmatrix::size() const{
     return _Dimensions;
 }
 size_t mmatrix::row_size() const{
-    return _Dimensions._Row;
+    return _Dimensions.Row;
 }
 size_t mmatrix::col_size() const{
-    return _Dimensions._Col;
+    return _Dimensions.Col;
+}
+
+void mmatrix::create_col_wrapper(){
+    _MatrixT.clear();
+    _DimensionsT = mdimension(_Dimensions.Col,_Dimensions.Row);
+
+ 
+    std::vector<std::vector<double>::iterator> IterVec(_Dimensions.Row);
+    std::transform(_Matrix.begin(),_Matrix.end(),IterVec.begin(),[](std::vector<double> & Vec){
+        return Vec.begin();
+    });
+
+    _MatrixT.resize(_DimensionsT.Row);
+    std::transform(_MatrixT.begin(), _MatrixT.end(), _MatrixT.begin(),[&IterVec](std::vector< std::reference_wrapper<double> > & Vec){
+        Vec.reserve(IterVec.size());
+        std::transform(IterVec.begin(),IterVec.end(),std::back_inserter(Vec),[](std::vector<double>::iterator & It){
+            return std::ref(*It++);
+        });
+        return Vec;
+    });
 }
