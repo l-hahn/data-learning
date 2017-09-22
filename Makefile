@@ -16,5 +16,5 @@ $(BASEEXE): $(BASEOBJ)
 
 clean:
 	find ./src/ -name "*.o" -delete
-	find ./ -name $(SWDBPRG) -delete
-	find ./ -name $(SWDSPRG) -delete
+	find ./ -name $(BASEEXE) -delete
+	find ./ -name $(BASEEXE) -delete
