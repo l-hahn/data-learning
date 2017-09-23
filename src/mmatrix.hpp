@@ -75,7 +75,7 @@ class mmatrix{
 
 
         mmatrix<T> transposition();
-        mmatrix<T>& transpose();
+        void transpose();
         mmatrix<T> entry_mult(const mmatrix<T> && Mat);
         mmatrix<T> entry_mult(const mmatrix & Mat);
         mmatrix<T>& equal_entry_mult(const mmatrix<T> && Mat);
@@ -90,7 +90,9 @@ class mmatrix{
         size_t row_size() const;
         size_t col_size() const;
 
-
+        typedef typename std::vector<T>::iterator iterator;
+        iterator begin();
+        iterator end();
 
     private:
         void create_col_wrapper();
@@ -165,10 +167,6 @@ void mmatrix<T>::push_back_row(const std::vector<T> & Mat, bool EnsureSize){
         Vec.push_back(std::ref(Val));
         return Vec;
     });
-    // auto Val = (_Matrix.end()-1)->begin();
-    // for(auto & Vec : _MatrixT){
-    //     Vec.push_back(std::ref(*Val++));
-    // }
     _DimensionsT.Col++;
 
 }
@@ -524,7 +522,7 @@ mmatrix<T> mmatrix<T>::transposition(){
     return NewMat;
 }
 template<typename T>
-mmatrix<T>& mmatrix<T>::transpose(){
+void mmatrix<T>::transpose(){
     _Dimensions = _DimensionsT;
     std::vector< std::vector<T> > MatrixT(_Dimensions.Row, std::vector<T>(_Dimensions.Col));
     std::transform(_MatrixT.begin(),_MatrixT.end(), MatrixT.begin(),[](std::vector< std::reference_wrapper<T> > & Vec){
@@ -532,7 +530,6 @@ mmatrix<T>& mmatrix<T>::transpose(){
     });
     std::swap(_Matrix,MatrixT);
     create_col_wrapper();
-    return *this;
 }
 template<typename T>
 mmatrix<T> mmatrix<T>::entry_mult(const mmatrix<T> && Mat){
@@ -590,6 +587,7 @@ std::string mmatrix<T>::to_string(char Delimiter, char Separator,  char Border){
         MatStr[MatStr.size()-1] = Border;
         MatStr += Separator;
     }
+    MatStr.pop_back();
     return MatStr;
 }
 
@@ -608,6 +606,15 @@ size_t mmatrix<T>::row_size() const{
 template<typename T>
 size_t mmatrix<T>::col_size() const{
     return _Dimensions.Col;
+}
+
+template<typename T>
+typename mmatrix<T>::iterator mmatrix<T>::begin(){
+    return _Matrix.begin();
+}
+template<typename T>
+typename mmatrix<T>::iterator mmatrix<T>::end(){
+    return _Matrix.end();
 }
 
 template<typename T>
