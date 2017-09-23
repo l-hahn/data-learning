@@ -50,6 +50,10 @@ class mmatrix{
         mmatrix<T>& operator-=(const mmatrix<T> && Mat);
         mmatrix<T>& operator+=(const mmatrix<T> & Mat);
         mmatrix<T>& operator-=(const mmatrix<T> & Mat);
+        mmatrix<T>& operator+=(const std::vector<T> && Mat);
+        mmatrix<T>& operator-=(const std::vector<T> && Mat);
+        mmatrix<T>& operator+=(const std::vector<T> & Mat);
+        mmatrix<T>& operator-=(const std::vector<T> & Mat);
         mmatrix<T>& operator+=(const T Val);
         mmatrix<T>& operator-=(const T Val);
 
@@ -57,16 +61,24 @@ class mmatrix{
         mmatrix<T> operator-(const mmatrix<T> && Mat) const;
         mmatrix<T> operator+(const mmatrix<T> & Mat) const;
         mmatrix<T> operator-(const mmatrix<T> & Mat) const;
+        mmatrix<T> operator+(const std::vector<T> && Mat) const;
+        mmatrix<T> operator-(const std::vector<T> && Mat) const;
+        mmatrix<T> operator+(const std::vector<T> & Mat) const;
+        mmatrix<T> operator-(const std::vector<T> & Mat) const;
         mmatrix<T> operator+(const T Val) const;
         mmatrix<T> operator-(const T Val) const;
 
         mmatrix<T>& operator*=(mmatrix<T> && Mat);
         mmatrix<T>& operator*=(mmatrix<T> & Mat);
+        mmatrix<T>& operator*=(std::vector<T> && Mat);
+        mmatrix<T>& operator*=(std::vector<T> & Mat);
         mmatrix<T>& operator*=(const T Val);
         mmatrix<T>& operator/=(const T Val);
 
         mmatrix<T> operator*(mmatrix<T> && Mat);
         mmatrix<T> operator*(mmatrix<T> & Mat);
+        mmatrix<T> operator*(std::vector<T> && Mat);
+        mmatrix<T> operator*(std::vector<T> & Mat);
         mmatrix<T> operator*(const T Val) const;
         mmatrix<T> operator/(const T Val) const;
 
@@ -93,6 +105,9 @@ class mmatrix{
         typedef typename std::vector<T>::iterator iterator;
         iterator begin();
         iterator end();
+
+        static mmatrix<T> covariance(mmatrix<T> && Mat);
+        static mmatrix<T> covariance(mmatrix<T> & Mat);
 
     private:
         void create_col_wrapper();
@@ -152,7 +167,7 @@ template<typename T>
 void mmatrix<T>::push_back_row(const std::vector<T> & Mat, bool EnsureSize){
     if(_Dimensions.Col != Mat.size() && _Dimensions.Col != 0){
         throw std::out_of_range("Matrix col-dimensions "+ _Dimensions.to_string()
-            + " and [1x" + std::to_string(Mat.size()) + " are not conforming.");
+            + " and [1x" + std::to_string(Mat.size()) + "] are not conforming.");
     }
     if( _Dimensions.Col == 0){
         _Dimensions.Col = Mat.size();
@@ -178,7 +193,7 @@ template<typename T>
 void mmatrix<T>::push_back_col(const std::vector<T> & Mat, bool EnsureSize){
     if(_Dimensions.Row != Mat.size() && _Dimensions.Row != 0){
         throw std::out_of_range("Matrix row-dimensions "+ _Dimensions.to_string()
-            + " and [1x" + std::to_string(Mat.size()) + " are not conforming.");
+            + " and [1x" + std::to_string(Mat.size()) + "] are not conforming.");
     }
     if(_Dimensions.Row == 0){
         _Dimensions.Row = Mat.size();
@@ -299,6 +314,38 @@ mmatrix<T>& mmatrix<T>::operator-=(const mmatrix<T> & Mat){
     return *this;
 }
 template<typename T>
+mmatrix<T>& mmatrix<T>::operator+=(const std::vector<T> && Mat){
+    return operator+=(Mat);
+}
+template<typename T>
+mmatrix<T>& mmatrix<T>::operator-=(const std::vector<T> && Mat){
+    return operator-=(Mat);
+}
+template<typename T>
+mmatrix<T>& mmatrix<T>::operator+=(const std::vector<T> & Mat){
+    mmatrix<T> NewMat(_Dimensions.Row,Mat.size());
+    std::transform(NewMat._Matrix.begin(),NewMat._Matrix.end(),NewMat._Matrix.begin(),[&Mat](std::vector<T> & Vec){
+        std::transform(Mat.begin(),Mat.end(),Vec.begin(),[](double Val){
+            return Val;
+        });
+        return Vec;
+    });
+    NewMat.create_col_wrapper();
+    return operator+=(NewMat);
+}
+template<typename T>
+mmatrix<T>& mmatrix<T>::operator-=(const std::vector<T> & Mat){
+    mmatrix<T> NewMat(_Dimensions.Row,Mat.size());
+    std::transform(NewMat._Matrix.begin(),NewMat._Matrix.end(),NewMat._Matrix.begin(),[&Mat](std::vector<T> & Vec){
+        std::transform(Mat.begin(),Mat.end(),Vec.begin(),[](double Val){
+            return Val;
+        });
+        return Vec;
+    });
+    NewMat.create_col_wrapper();
+    return operator-=(NewMat);
+}
+template<typename T>
 mmatrix<T>& mmatrix<T>::operator+=(const T Add){
     std::transform(_Matrix.begin(),_Matrix.end(),_Matrix.begin(),[Add]
     (std::vector<T> & Vec){
@@ -362,6 +409,38 @@ mmatrix<T> mmatrix<T>::operator-(const mmatrix<T> & Mat) const{
     return NewMat;
 }
 template<typename T>
+mmatrix<T> mmatrix<T>::operator+(const std::vector<T> && Mat) const{
+    return operator+(Mat);
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::operator-(const std::vector<T> && Mat) const{
+    return operator-(Mat);
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::operator+(const std::vector<T> & Mat) const{
+    mmatrix<T> NewMat(_Dimensions.Row,Mat.size());
+    std::transform(NewMat._Matrix.begin(),NewMat._Matrix.end(),NewMat._Matrix.begin(),[&Mat](std::vector<T> & Vec){
+        std::transform(Mat.begin(),Mat.end(),Vec.begin(),[](double Val){
+            return Val;
+        });
+        return Vec;
+    });
+    NewMat.create_col_wrapper();
+    return operator+(NewMat);
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::operator-(const std::vector<T> & Mat) const{
+    mmatrix<T> NewMat(_Dimensions.Row,Mat.size());
+    std::transform(NewMat._Matrix.begin(),NewMat._Matrix.end(),NewMat._Matrix.begin(),[&Mat](std::vector<T> & Vec){
+        std::transform(Mat.begin(),Mat.end(),Vec.begin(),[](double Val){
+            return Val;
+        });
+        return Vec;
+    });
+    NewMat.create_col_wrapper();
+    return operator-(NewMat);
+}
+template<typename T>
 mmatrix<T> mmatrix<T>::operator+(const T Add) const{
     mmatrix<T> NewMat(_Dimensions, 0);
     std::vector< std::vector<T> > & ResMat = NewMat._Matrix;
@@ -418,6 +497,16 @@ mmatrix<T>& mmatrix<T>::operator*=(mmatrix<T> & Mat){
     return *this;
 }
 template<typename T>
+mmatrix<T>& mmatrix<T>::operator*=(std::vector<T> && Mat){
+    return operator*=(Mat);
+}
+template<typename T>
+mmatrix<T>& mmatrix<T>::operator*=(std::vector<T> & Mat){
+    mmatrix<T> NewMat;
+    NewMat.push_back(Mat);
+    return operator*=(NewMat.transpose());
+}
+template<typename T>
 mmatrix<T>& mmatrix<T>::operator*=(const T Mul){
     std::transform(_Matrix.begin(),_Matrix.end(),_Matrix.begin(),
     [Mul](std::vector<T> & Vec){
@@ -464,6 +553,16 @@ mmatrix<T> mmatrix<T>::operator*(mmatrix<T> & Mat){
     });
     NewMat.create_col_wrapper();
     return NewMat;
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::operator*(std::vector<T> && Mat){
+    return operator*(Mat);
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::operator*(std::vector<T> & Mat){
+    mmatrix<T> NewMat;
+    NewMat.push_back(Mat);
+    return operator*=(NewMat.transpose());
 }
 template<typename T>
 mmatrix<T> mmatrix<T>::operator*(const T Mul) const{
@@ -625,7 +724,6 @@ void mmatrix<T>::create_col_wrapper(){
     std::transform(_Matrix.begin(),_Matrix.end(),IterVec.begin(),[](std::vector<T> & Vec){
         return Vec.begin();
     });
-
     _MatrixT.resize(_DimensionsT.Row);
     std::transform(_MatrixT.begin(), _MatrixT.end(), _MatrixT.begin(),[&IterVec](std::vector< std::reference_wrapper<T> > & Vec){
         Vec.reserve(IterVec.size());
@@ -635,4 +733,28 @@ void mmatrix<T>::create_col_wrapper(){
         return Vec;
     });
 }
+
+
+template<typename T>
+mmatrix<T> mmatrix<T>::covariance(mmatrix<T> && Mat){
+    return covariance(Mat);
+}
+
+template<typename T>
+mmatrix<T> mmatrix<T>::covariance(mmatrix<T> & Mat){
+    std::vector<T> MeanVec(Mat._Dimensions.Col);
+    mmatrix<T> CovMat = Mat;
+    std::transform(MeanVec.begin(),MeanVec.end(),Mat._MatrixT.begin(),MeanVec.begin(),[](T & Init, std::vector< std::reference_wrapper<T> > & Vec){
+        return std::accumulate(Vec.begin(),Vec.end(),Init)/(double)Vec.size();
+    });
+    CovMat -= MeanVec;
+    if(Mat._Dimensions.Row > 1){
+        CovMat = CovMat.transposition()*CovMat/(Mat._Dimensions.Row-1);
+    }
+    else{
+        CovMat = CovMat.transposition()*CovMat/Mat._Dimensions.Row;
+    }
+    return CovMat;
+}
+
 #endif
