@@ -23,7 +23,7 @@ int main(){
         }
     }
     Input.close();
-    
+
     CovMat = mmatrix<double>::covariance(DataMat);
     std::cout << CovMat.to_string() << std::endl;
 }

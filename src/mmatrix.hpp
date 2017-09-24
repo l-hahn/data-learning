@@ -302,7 +302,7 @@ mmatrix<T>& mmatrix<T>::operator+=(std::vector<T> & Mat){
             + " and [" + std::to_string(Mat.size()) + "x1] are not conforming.");
     }
     mmatrix<T> NewMat(_Dimensions.Row,Mat.size());
-    std::vector<T> * RowsL = &_Matrix.front();
+    std::vector<T> * RowsL = &NewMat._Matrix.front();
     T * ValsR = &Mat.front();
     for(std::size_t i = 0; i < _Dimensions.Row; i++){
         T * ValsL = &RowsL[i].front();
@@ -319,7 +319,7 @@ mmatrix<T>& mmatrix<T>::operator-=(std::vector<T> & Mat){
             + " and [" + std::to_string(Mat.size()) + "x1] are not conforming.");
     }
     mmatrix<T> NewMat(_Dimensions.Row,Mat.size());
-    std::vector<T> * RowsL = &_Matrix.front();
+    std::vector<T> * RowsL = &NewMat._Matrix.front();
     T * ValsR = &Mat.front();
     for(std::size_t i = 0; i < _Dimensions.Row; i++){
         T * ValsL = &RowsL[i].front();
@@ -375,7 +375,7 @@ mmatrix<T> mmatrix<T>::operator+(mmatrix<T> & Mat){
         T * ValsR = &RowsR[i].front();
         T * Vals = &Rows[i].front();
         for(std::size_t j = 0; j < _Dimensions.Col; j++){
-            Vals[j] = ValsL[i] + ValsR[j];
+            Vals[j] = ValsL[j] + ValsR[j];
         }
     }
     return NewMat;
@@ -395,7 +395,7 @@ mmatrix<T> mmatrix<T>::operator-(mmatrix<T> & Mat){
         T * ValsR = &RowsR[i].front();
         T * Vals = &Rows[i].front();
         for(std::size_t j = 0; j < _Dimensions.Col; j++){
-            Vals[j] = ValsL[i] - ValsR[j];
+            Vals[j] = ValsL[j] - ValsR[j];
         }
     }
     return NewMat;
@@ -411,7 +411,7 @@ mmatrix<T> mmatrix<T>::operator-(std::vector<T> && Mat){
 template<typename T>
 mmatrix<T> mmatrix<T>::operator+(std::vector<T> & Mat){
     mmatrix<T> NewMat(_Dimensions.Row,Mat.size());
-    std::vector<T> * RowsL = &_Matrix.front();
+    std::vector<T> * RowsL = &NewMat._Matrix.front();
     T * ValsR = &Mat.front();
     for(std::size_t i = 0; i < _Dimensions.Row; i++){
         T * ValsL = &RowsL[i].front();
@@ -424,7 +424,7 @@ mmatrix<T> mmatrix<T>::operator+(std::vector<T> & Mat){
 template<typename T>
 mmatrix<T> mmatrix<T>::operator-(std::vector<T> & Mat){
     mmatrix<T> NewMat(_Dimensions.Row,Mat.size());
-    std::vector<T> * RowsL = &_Matrix.front();
+    std::vector<T> * RowsL = &NewMat._Matrix.front();
     T * ValsR = &Mat.front();
     for(std::size_t i = 0; i < _Dimensions.Row; i++){
         T * ValsL = &RowsL[i].front();
@@ -501,7 +501,8 @@ template<typename T>
 mmatrix<T>& mmatrix<T>::operator*=(std::vector<T> & Mat){
     mmatrix<T> NewMat;
     NewMat.push_back(Mat);
-    return operator*=(NewMat.transpose());
+    NewMat.transpose();
+    return operator*=(NewMat);
 }
 template<typename T>
 mmatrix<T>& mmatrix<T>::operator*=(const T Val){
@@ -564,7 +565,8 @@ template<typename T>
 mmatrix<T> mmatrix<T>::operator*(std::vector<T> & Mat){
     mmatrix<T> NewMat;
     NewMat.push_back(Mat);
-    return operator*=(NewMat.transpose());
+    NewMat.transpose();
+    return operator*=(NewMat);
 }
 template<typename T>
 mmatrix<T> mmatrix<T>::operator*(const T Val){
@@ -622,15 +624,14 @@ mmatrix<T> mmatrix<T>::transposition(){
     for(unsigned int i = 0; i < NewDim.Row; i++){
         T * ValsL = &RowsL[i].front();
         for(unsigned int j = 0; j < NewDim.Col; j++){
-            ValsL[j] = ValsR[i][j];
+            ValsL[j] = ValsR[j][i];
         }
     }
     return NewMat;
 }
 template<typename T>
 void mmatrix<T>::transpose(){
-    _Dimensions.swap();
-    std::vector< std::vector<T> > NewMat(_Dimensions.Row,std::vector<T>(_Dimensions.Col));
+    std::vector< std::vector<T> > NewMat(_Dimensions.Col,std::vector<T>(_Dimensions.Row));
 
     std::vector<T> * RowsL = &NewMat.front();
     std::vector<T> * RowsR = &_Matrix.front();
@@ -640,12 +641,13 @@ void mmatrix<T>::transpose(){
     for(unsigned int i = 0; i < _Matrix.size(); i++){
         ValsR[i] = &RowsR[i].front();
     }
-    for(unsigned int i = 0; i < _Dimensions.Row; i++){
+    for(unsigned int i = 0; i < _Dimensions.Col; i++){
         T * ValsL = &RowsL[i].front();
-        for(unsigned int j = 0; j < _Dimensions.Col; j++){
-            ValsL[j] = std::move(ValsR[j]);
+        for(unsigned int j = 0; j < _Dimensions.Row; j++){
+            ValsL[j] = ValsR[j][i];
         }
     }
+    _Dimensions.swap();
     std::swap(_Matrix,NewMat);
 }
 template<typename T>
@@ -671,7 +673,7 @@ mmatrix<T> mmatrix<T>::entry_mult(mmatrix<T> & Mat){
         T * ValsR = &RowsR[i].front();
         T * Vals = &Rows[i].front();
         for(std::size_t j = 0; j < _Dimensions.Col; j++){
-            Vals[j] = ValsL[i] - ValsR[j];
+            Vals[j] = ValsL[j] * ValsR[j];
         }
     }
     return NewMat;
