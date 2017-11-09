@@ -15,6 +15,10 @@
 
 template<typename T = double>
 class mmatrix{
+    private:
+        std::vector< std::vector<T> > _Matrix;
+        mdimension _Dimensions;
+
     public:
         mmatrix();
         mmatrix(size_t Row, size_t Col, T Val=T());
@@ -108,13 +112,27 @@ class mmatrix{
 
         static mmatrix<T> covariance(mmatrix<T> && Mat);
         static mmatrix<T> covariance(mmatrix<T> & Mat);
+        static meigen<T> eigen(mmatrix<T> && Mat);
+        static meigen<T> eigen(mmatrix<T> & Mat);
+        static meigen<T> eigen(mmatrix<T> && Mat, unsigned VecNo);
+        static meigen<T> eigen(mmatrix<T> & Mat), unsigned VecNo;
+
+        static mmatrix<T> vector_norm(mmatrix<T> && Vector);
+        static mmatrix<T> vector_norm(mmatrix<T> & Vector);
+        static mmatrix<T> vector_norm(mmatrix<T> && Vector, unsigned Norm = 2);
+        static mmatrix<T> vector_norm(mmatrix<T> & Vector, unsigned Norm = 2);
+        static mmatrix<T> vector_norm(mmatrix<T> && Vector, std::function<T(mmatrix<T>)> const& Norm);
+        static mmatrix<T> vector_norm(mmatrix<T> & Vector, std::function<T(mmatrix<T>)> const& Norm);
+
+        static const std::function<T(mmatrix<T>)> euclid;
+        static const std::function<T(mmatrix<T>)> taxicap;
+
 
     private:
-        std::vector< std::vector<T> > _Matrix;
-        mdimension _Dimensions;
+        static T l_p_norm(mmatrix<T> & Matrix, unsigned Norm);
+        static T eucl_norm(mmatrix<T> & Matrix);
+        static T taxicap_Norm(mmatrix<T> & Matrix);
 };
-
-#include "mmatrix.hpp"
 
 template<typename T>
 mmatrix<T>::mmatrix(){
@@ -785,5 +803,63 @@ mmatrix<T> mmatrix<T>::covariance(mmatrix<T> & Mat){
     }
     return CovMat;
 }
+
+template<typename T>
+std::vector< meigen<T> > mmatrix<T>::eigen(mmatrix<T> && Mat){
+    return eigen(Mat);
+}
+template<typename T>
+std::vector< meigen<T> > mmatrix<T>::eigen(mmatrix<T> & Mat){
+
+}
+template<typename T>
+std::vector< meigen<T> > mmatrix<T>::eigen(mmatrix<T> && Mat, unsigned VecNo){
+    return eigen(Mat, VecNo);
+}
+template<typename T>
+std::vector< meigen<T> > mmatrix<T>::eigen(mmatrix<T> & Mat), unsigned VecNo{
+
+}
+
+template<typename T>
+mmatrix<T> mmatrix<T>::vector_norm(mmatrix<T> && Vector){
+    return vector_norm(Vector);
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::vector_norm(mmatrix<T> & Vector){
+
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::vector_norm(mmatrix<T> && Vector, unsigned LPNorm = 2){
+    return vector_norm(Vector, LPNorm);
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::vector_norm(mmatrix<T> & Vector, unsigned LPNorm = 2){
+
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::vector_norm(mmatrix<T> && Vector, std::function<T(mmatrix<T>)> const& Norm){
+    return vector_norm(Vector, Norm);
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::vector_norm(mmatrix<T> & Vector, std::function<T(mmatrix<T>)> const& Norm){
+    return Norm(Vector);
+}
+
+template<typename T>
+T l_p_norm(mmatrix<T> & Matrix, unsigned Norm){
+    
+}
+template<typename T>
+T eucl_norm(mmatrix<T> & Matrix){
+    
+}
+template<typename T>
+T taxicap_Norm(mmatrix<T> & Matrix){
+    
+}
+
+mmatrix<T>::euclid = &mmatrix<T>::eucl_norm;
+mmatrix<T>::taxicap = &mmatrix<T>::taxicap_norm;
 
 #endif

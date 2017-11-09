@@ -4,7 +4,7 @@
 #include <string>
 #include <sstream>
 
-#include "mmatrix.hpp"
+#include "../lib/mmatrix.hpp"
 
 void split(const std::string &s, char delim, std::vector<double> &elems);
 std::vector<double> split(const std::string &s, char delim);
@@ -14,7 +14,7 @@ int main(){
     std::vector<double> data;
     std::string Line;
 
-    std::ifstream Input("Hidden.data");
+    std::ifstream Input("test-data/Hidden.data");
     while(!Input.eof()){
         std::getline(Input,Line);
         data = split(Line, ' ');
@@ -23,7 +23,7 @@ int main(){
         }
     }
     Input.close();
-
+    std::cout << "Calc covariance" << std::endl;
     CovMat = mmatrix<double>::covariance(DataMat);
     std::cout << CovMat.to_string() << std::endl;
 }
