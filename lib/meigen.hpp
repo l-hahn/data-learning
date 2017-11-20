@@ -1,6 +1,9 @@
 #ifndef _MEIGEN_HPP_
 #define _MEIGEN_HPP_
 
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #include <algorithm>
 #include <cstlib>
 #include <ctime>
@@ -21,10 +24,10 @@ class meigen{
         mmatrix<T> vector();
         T value();
 
-        static mmatrix<T> power_iteration(mmatrix<T> && SqrMatrix);
-        static mmatrix<T> power_iteration(mmatrix<T> & SqrMatrix);
-        static mmatrix<T> power_iteration(mmatrix<T> && SqrMatrix, mmatrix<T> && InitVector);
-        static mmatrix<T> power_iteration(mmatrix<T> & SqrMatrix, mmatrix<T> && InitVector);
+        static meigen<T> power_iteration(mmatrix<T> && SqrMatrix, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
+        static meigen<T> power_iteration(mmatrix<T> & SqrMatrix, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
+        static meigen<T> power_iteration(mmatrix<T> && SqrMatrix, mmatrix<T> && InitVector, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
+        static meigen<T> power_iteration(mmatrix<T> & SqrMatrix, mmatrix<T> && InitVector, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
 }
 
 template<typename T>
@@ -49,29 +52,42 @@ T meigen::value(){
 }
 
 template<typename T>
-mmatrix<T> power_iteration(mmatrix<T> && SqrMatrix){
-    return power_iteration(SqrMatrix);
+mmatrix<T> power_iteration(mmatrix<T> && SqrMatrix, std::function<T(mmatrix<T>)> const& Norm){
+    return power_iteration(SqrMatrix, Norm);
 }
 
 template<typename T>
-mmatrix<T> power_iteration(mmatrix<T> & SqrMatrix){
+mmatrix<T> power_iteration(mmatrix<T> & SqrMatrix, std::function<T(mmatrix<T>)> const& Norm){
     std::vector<T> RandVec(SqrMatrix.col_size());
+
     std::srand(std::time(0));
     std::transform(RandVec.begin(), RandVec.end(), RandVec.begin(),rand());
-
     mmatrix<T> RandInitVector(RandVec);
     
-    return power_iteration(SqrMatrix, RandInitVector);
+    return power_iteration(SqrMatrix, RandInitVector, Norm);
 }
 
 template<typename T>
 mmatrix<T> power_iteration(mmatrix<T> && SqrMatrix, mmatrix<T> && InitVector, std::function<T(mmatrix<T>)> const& Norm){
-    power_iteration(SqrMatrix, InitVector);
+    power_iteration(SqrMatrix, InitVector, Norm);
 }
 
 template<typename T>
 mmatrix<T> power_iteration(mmatrix<T> & SqrMatrix, mmatrix<T> & InitVector, std::function<T(mmatrix<T>)> const& Norm){
+    //TODO: Throw Exception for wrong matrix size!
+    mmatrix<T> PreVec = InitVector, EigVec(PreVec * SqrMatrix);
+    EigVec /= Norm(EigVec);
+
+    double deg = std::acos(PreVec*EigVec.transposition())*180.0 / M_PI;
+
+    while(deg < 1e-4){
+        EigVec = PreVec * SqrMatrix;
+        EigVec /= Norm(EigVec);
+        deg = std::acos(PreVec*EigVec.transposition())*180.0 / M_PI;
+    }
+    T EigVal = EigVec * SqrMatrix * EigVec;
     
+    return meigen(EigVec, EigVal);
 }
 
 #endif
