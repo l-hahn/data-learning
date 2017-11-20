@@ -26,6 +26,8 @@ class mmatrix{
         mmatrix(const mdimension && Dim, T Val=T());
         mmatrix(const mmatrix<T> && Mat);
         mmatrix(const mmatrix<T> & Mat);
+        mmatrix(const std::vector<T> && Mat);
+        mmatrix(const std::vector<T> & Mat);
 
 
         void push_back(const std::vector<T> && ValList, bool EnsureSize = false);
@@ -117,8 +119,6 @@ class mmatrix{
         static meigen<T> eigen(mmatrix<T> && Mat, unsigned VecNo);
         static meigen<T> eigen(mmatrix<T> & Mat), unsigned VecNo;
 
-        static mmatrix<T> vector_norm(mmatrix<T> && Vector);
-        static mmatrix<T> vector_norm(mmatrix<T> & Vector);
         static mmatrix<T> vector_norm(mmatrix<T> && Vector, unsigned Norm = 2);
         static mmatrix<T> vector_norm(mmatrix<T> & Vector, unsigned Norm = 2);
         static mmatrix<T> vector_norm(mmatrix<T> && Vector, std::function<T(mmatrix<T>)> const& Norm);
@@ -160,6 +160,18 @@ template<typename T>
 mmatrix<T>::mmatrix(const mmatrix<T> & Mat){
     _Matrix = Mat._Matrix;
     _Dimensions = Mat._Dimensions;
+}
+
+template<typename T>
+mmatrix<T>::mmatrix(const std::vector<T> && Mat){
+    resize(1,Mat.size());
+    push_back(Mat);
+}
+
+template<typename T>
+mmatrix<T>::mmatrix(const std::vector<T> & Mat){
+    resize(1,Mat.size());
+    push_back(Mat);
 }
 
 
@@ -821,14 +833,7 @@ std::vector< meigen<T> > mmatrix<T>::eigen(mmatrix<T> & Mat), unsigned VecNo{
 
 }
 
-template<typename T>
-mmatrix<T> mmatrix<T>::vector_norm(mmatrix<T> && Vector){
-    return vector_norm(Vector);
-}
-template<typename T>
-mmatrix<T> mmatrix<T>::vector_norm(mmatrix<T> & Vector){
 
-}
 template<typename T>
 mmatrix<T> mmatrix<T>::vector_norm(mmatrix<T> && Vector, unsigned LPNorm = 2){
     return vector_norm(Vector, LPNorm);
