@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "mdimension.hpp"
+#include "meigen.hpp"
 
 template<typename T = double>
 class mmatrix{

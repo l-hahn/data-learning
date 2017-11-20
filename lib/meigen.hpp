@@ -5,11 +5,11 @@
 #include <cmath>
 
 #include <algorithm>
-#include <cstlib>
+#include <cstdlib>
 #include <ctime>
 
-template<typename T>
-class mmatrix<T>;
+template<typename T = double>
+class mmatrix;
 
 template<typename T = double>
 class meigen{
@@ -27,37 +27,37 @@ class meigen{
         static meigen<T> power_iteration(mmatrix<T> && SqrMatrix, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
         static meigen<T> power_iteration(mmatrix<T> & SqrMatrix, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
         static meigen<T> power_iteration(mmatrix<T> && SqrMatrix, mmatrix<T> && InitVector, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
-        static meigen<T> power_iteration(mmatrix<T> & SqrMatrix, mmatrix<T> && InitVector, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
-}
+        static meigen<T> power_iteration(mmatrix<T> & SqrMatrix, mmatrix<T> & InitVector, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
+};
 
 template<typename T>
-meigen::meigen(matrix<T> & Vector, T Value){
+meigen<T>::meigen(matrix<T> && Vector, T Value){
     meigen(Vector,Value);
 }
 
 template<typename T>
-meigen::meigen(matrix<T> & Vector, T Value){
+meigen<T>::meigen(matrix<T> & Vector, T Value){
     EigenVector = Vector;
     EigenValue = Value;
 }
 
 template<typename T>
-mmatrix<T> meigen::vector(){
+mmatrix<T> meigen<T>::vector(){
     return EigenVector;
 }
 
 template<typename T>
-T meigen::value(){
+T meigen<T>::value(){
     return EigenValue;
 }
 
 template<typename T>
-mmatrix<T> power_iteration(mmatrix<T> && SqrMatrix, std::function<T(mmatrix<T>)> const& Norm){
+meigen<T> meigen<T>::power_iteration(mmatrix<T> && SqrMatrix, std::function<T(mmatrix<T>)> const& Norm){
     return power_iteration(SqrMatrix, Norm);
 }
 
 template<typename T>
-mmatrix<T> power_iteration(mmatrix<T> & SqrMatrix, std::function<T(mmatrix<T>)> const& Norm){
+meigen<T> meigen<T>::power_iteration(mmatrix<T> & SqrMatrix, std::function<T(mmatrix<T>)> const& Norm){
     std::vector<T> RandVec(SqrMatrix.col_size());
 
     std::srand(std::time(0));
@@ -68,12 +68,12 @@ mmatrix<T> power_iteration(mmatrix<T> & SqrMatrix, std::function<T(mmatrix<T>)> 
 }
 
 template<typename T>
-mmatrix<T> power_iteration(mmatrix<T> && SqrMatrix, mmatrix<T> && InitVector, std::function<T(mmatrix<T>)> const& Norm){
+meigen<T> meigen<T>::power_iteration(mmatrix<T> && SqrMatrix, mmatrix<T> && InitVector, std::function<T(mmatrix<T>)> const& Norm){
     power_iteration(SqrMatrix, InitVector, Norm);
 }
 
 template<typename T>
-mmatrix<T> power_iteration(mmatrix<T> & SqrMatrix, mmatrix<T> & InitVector, std::function<T(mmatrix<T>)> const& Norm){
+meigen<T> meigen<T>::power_iteration(mmatrix<T> & SqrMatrix, mmatrix<T> & InitVector, std::function<T(mmatrix<T>)> const& Norm){
     //TODO: Throw Exception for wrong matrix size!
     mmatrix<T> PreVec = InitVector, EigVec(PreVec * SqrMatrix);
     EigVec /= Norm(EigVec);
