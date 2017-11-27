@@ -113,8 +113,8 @@ class mmatrix{
 
         static mmatrix<T> covariance(mmatrix<T> && Mat);
         static mmatrix<T> covariance(mmatrix<T> & Mat);
-        static meigen<T> eigen(mmatrix<T> && Mat, unsigned VecNo = 0);
-        static meigen<T> eigen(mmatrix<T> & Mat, unsigned VecNo = 0);
+        static std::vector< meigen<T> > eigen(mmatrix<T> && Mat, unsigned VecNo = 0);
+        static std::vector< meigen<T> > eigen(mmatrix<T> & Mat, unsigned VecNo = 0);
 
         static T vector_norm(mmatrix<T> && Vector, unsigned Norm = 2);
         static T vector_norm(mmatrix<T> & Vector, unsigned Norm = 2);
@@ -812,14 +812,14 @@ std::vector< meigen<T> > mmatrix<T>::eigen(mmatrix<T> && Mat, unsigned VecNo){
 template<typename T>
 std::vector< meigen<T> > mmatrix<T>::eigen(mmatrix<T> & Mat, unsigned VecNo){
     if(VecNo == 0){
-        VecNo = Mat.size();
+        VecNo = Mat.row_size();
     }
 
-    std::vector< meigen<T> > Eigens = Eigens(VecNo);
+    std::vector< meigen<T> > Eigens =  std::vector< meigen<T> >(VecNo);
     mmatrix<T> EigenMat = Mat;
     
     for(unsigned i = 0; i < VecNo; i++){
-        Eigens[i] = meigens<T>::power_iteration();
+        Eigens[i] = meigen<T>::power_iteration(EigenMat);
         EigenMat = EigenMat - Eigens[i].value()*Eigens[i].vector().transposition()*Eigens[i].vector();
     }
 
@@ -869,7 +869,9 @@ T taxicap_Norm(mmatrix<T> & Matrix){
     return l_p_norm(Matrix, 1);    
 }
 
-mmatrix<T>::euclid = &mmatrix<T>::eucl_norm;
-mmatrix<T>::taxicap = &mmatrix<T>::taxicap_norm;
+template<typename T>
+const std::function<T(mmatrix<T>)> mmatrix<T>::euclid = &mmatrix<T>::eucl_norm;
+template<typename T>
+const std::function<T(mmatrix<T>)> mmatrix<T>::taxicap = &mmatrix<T>::taxicap_norm;
 
 #endif

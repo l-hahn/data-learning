@@ -26,6 +26,11 @@ int main(){
     std::cout << "Calc covariance" << std::endl;
     CovMat = mmatrix<double>::covariance(DataMat);
     std::cout << CovMat.to_string() << std::endl;
+
+    //std::vector< meigen<double> > EigVec = mmatrix<double>::eigen(CovMat);
+    //for(auto Eigen : EigVec){
+    //    std::cout << Eigen.value() << std::endl;
+    //}
 }
 
 void split(const std::string &s, char delim, std::vector<double> &elems){

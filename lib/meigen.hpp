@@ -8,7 +8,7 @@
 #include <cstdlib>
 #include <ctime>
 
-template<typename T = double>
+template<typename T>
 class mmatrix;
 
 template<typename T = double>
@@ -31,12 +31,13 @@ class meigen{
 };
 
 template<typename T>
-meigen<T>::meigen(matrix<T> && Vector, T Value){
-    meigen(Vector,Value);
+meigen<T>::meigen(mmatrix<T> && Vector, T Value){
+   EigenVector = Vector;
+   EigenValue = Value;
 }
 
 template<typename T>
-meigen<T>::meigen(matrix<T> & Vector, T Value){
+meigen<T>::meigen(mmatrix<T> & Vector, T Value){
     EigenVector = Vector;
     EigenValue = Value;
 }
