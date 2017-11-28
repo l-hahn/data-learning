@@ -15,8 +15,9 @@ class mmatrix;
 template<typename T = double>
 class meigen{
     private:
-        mmatrix<T> EigenVector;
-        T EigenValue;
+        mmatrix<T> _EigenVector;
+        T _EigenValue;
+        static T _Threshold = T(1e-4);
 
     public:
         meigen();
@@ -30,6 +31,9 @@ class meigen{
         static meigen<T> power_iteration(mmatrix<T> & SqrMatrix, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
         static meigen<T> power_iteration(mmatrix<T> && SqrMatrix, mmatrix<T> && InitVector, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
         static meigen<T> power_iteration(mmatrix<T> & SqrMatrix, mmatrix<T> & InitVector, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
+
+        static void threshold(T thresh);
+        static T threshold() const;
 };
 
 template<typename T>
@@ -37,24 +41,24 @@ meigen<T>::meigen(){};
 
 template<typename T>
 meigen<T>::meigen(mmatrix<T> && Vector, T Value){
-   EigenVector = Vector;
-   EigenValue = Value;
+   _EigenVector = Vector;
+   _EigenValue = Value;
 }
 
 template<typename T>
 meigen<T>::meigen(mmatrix<T> & Vector, T Value){
-    EigenVector = Vector;
-    EigenValue = Value;
+    _EigenVector = Vector;
+    _EigenValue = Value;
 }
 
 template<typename T>
 mmatrix<T> meigen<T>::vector(){
-    return EigenVector;
+    return _EigenVector;
 }
 
 template<typename T>
 T meigen<T>::value(){
-    return EigenValue;
+    return _EigenValue;
 }
 
 template<typename T>
@@ -96,6 +100,13 @@ meigen<T> meigen<T>::power_iteration(mmatrix<T> & SqrMatrix, mmatrix<T> & InitVe
     T EigVal = (EigVec * (SqrMatrix * EigVec.transposition()))[0][0];
     
     return meigen(EigVec, EigVal);
+}
+
+void meigen<T>::threshold(T Thresh){
+    _Threshold = Thresh;
+}
+T meigen<T>::threshold(){
+    return _Threshold;
 }
 
 #endif

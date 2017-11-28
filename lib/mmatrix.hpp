@@ -107,7 +107,7 @@ class mmatrix{
         size_t row_size() const;
         size_t col_size() const;
 
-        typedef typename std::vector<T>::iterator iterator;
+        typedef typename std::vector< std::vector<T> >::iterator iterator;
         iterator begin();
         iterator end();
 
@@ -764,11 +764,11 @@ size_t mmatrix<T>::col_size() const{
 }
 
 template<typename T>
-typename mmatrix<T>::iterator mmatrix<T>::begin(){
+typename std::vector< std::vector<T> >::iterator mmatrix<T>::begin(){
     return _Matrix.begin();
 }
 template<typename T>
-typename mmatrix<T>::iterator mmatrix<T>::end(){
+typename std::vector< std::vector<T> >::iterator mmatrix<T>::end(){
     return _Matrix.end();
 }
 
@@ -819,6 +819,7 @@ std::vector< meigen<T> > mmatrix<T>::eigen(mmatrix<T> & Mat, unsigned VecNo){
     mmatrix<T> EigenMat = Mat;
     
     for(unsigned i = 0; i < VecNo; i++){
+        std::cout << "eigen " << i << std::endl;
         Eigens[i] = meigen<T>::power_iteration(EigenMat);
         EigenMat = EigenMat - Eigens[i].vector().transposition()*Eigens[i].vector()*Eigens[i].value();
     }
@@ -845,7 +846,7 @@ T mmatrix<T>::vector_norm(mmatrix<T> & Vector, std::function<T(mmatrix<T>)> cons
 }
 
 template<typename T>
-T l_p_norm(mmatrix<T> & Matrix, unsigned Norm){
+T mmatrix<T>::l_p_norm(mmatrix<T> & Matrix, unsigned Norm){
     //TODO: Throw Exception for wrong matrix size!
     if(Matrix.row_size() == 1){
         T UnSqr =  std::accumulate(Matrix.begin()->begin(),Matrix.begin()->end(), 0, [&Norm](const T & SumPart, const T & Element){
@@ -854,19 +855,19 @@ T l_p_norm(mmatrix<T> & Matrix, unsigned Norm){
         return std::pow(UnSqr, 1.0/(double)Norm);
     }
     else{
-        T UnSqr =  std::accumulate(Matrix[0].begin(),Matrix[0].end(), 0, [&Norm](const T & SumPart, const T & Element){
-            return SumPart + std::pow(Element,Norm);
+        T UnSqr =  std::accumulate(Matrix.begin(),Matrix.end(), 0, [&Norm](const T & SumPart, const std::vector<T> & Element){
+            return SumPart + std::pow(*Element.begin(),Norm);
         });
         return std::pow(UnSqr, 1.0/(double)Norm);
     }
 }
 //TODO: solution to use reference of Matrix
 template<typename T>
-T eucl_norm(mmatrix<T>  Matrix){
+T mmatrix<T>::eucl_norm(mmatrix<T>  Matrix){
     return l_p_norm(Matrix, 2);
 }
 template<typename T>
-T taxicap_Norm(mmatrix<T>  Matrix){
+T mmatrix<T>::taxicap_Norm(mmatrix<T>  Matrix){
     return l_p_norm(Matrix, 1);    
 }
 
