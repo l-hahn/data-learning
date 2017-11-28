@@ -27,7 +27,7 @@ int main(){
     CovMat = mmatrix<double>::covariance(DataMat);
     std::cout << CovMat.to_string() << std::endl;
 
-    //std::vector< meigen<double> > EigVec = mmatrix<double>::eigen(CovMat);
+    std::vector< meigen<double> > EigVec = mmatrix<double>::eigen(CovMat);
     //for(auto Eigen : EigVec){
     //    std::cout << Eigen.value() << std::endl;
     //}

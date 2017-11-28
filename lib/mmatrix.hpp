@@ -127,8 +127,8 @@ class mmatrix{
 
     private:
         static T l_p_norm(mmatrix<T> & Matrix, unsigned Norm);
-        static T eucl_norm(mmatrix<T> & Matrix);
-        static T taxicap_Norm(mmatrix<T> & Matrix);
+        static T eucl_norm(mmatrix<T>  Matrix);
+        static T taxicap_Norm(mmatrix<T>  Matrix);
 };
 
 template<typename T>
@@ -820,7 +820,7 @@ std::vector< meigen<T> > mmatrix<T>::eigen(mmatrix<T> & Mat, unsigned VecNo){
     
     for(unsigned i = 0; i < VecNo; i++){
         Eigens[i] = meigen<T>::power_iteration(EigenMat);
-        EigenMat = EigenMat - Eigens[i].value()*Eigens[i].vector().transposition()*Eigens[i].vector();
+        EigenMat = EigenMat - Eigens[i].vector().transposition()*Eigens[i].vector()*Eigens[i].value();
     }
 
     return Eigens;
@@ -860,12 +860,13 @@ T l_p_norm(mmatrix<T> & Matrix, unsigned Norm){
         return std::pow(UnSqr, 1.0/(double)Norm);
     }
 }
+//TODO: solution to use reference of Matrix
 template<typename T>
-T eucl_norm(mmatrix<T> & Matrix){
+T eucl_norm(mmatrix<T>  Matrix){
     return l_p_norm(Matrix, 2);
 }
 template<typename T>
-T taxicap_Norm(mmatrix<T> & Matrix){
+T taxicap_Norm(mmatrix<T>  Matrix){
     return l_p_norm(Matrix, 1);    
 }
 

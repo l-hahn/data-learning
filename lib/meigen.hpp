@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <ctime>
+#include <cmath>
 
 template<typename T>
 class mmatrix;
@@ -18,6 +19,7 @@ class meigen{
         T EigenValue;
 
     public:
+        meigen();
         meigen(mmatrix<T> && Vector, T Value);
         meigen(mmatrix<T> & Vector, T Value);
 
@@ -29,6 +31,9 @@ class meigen{
         static meigen<T> power_iteration(mmatrix<T> && SqrMatrix, mmatrix<T> && InitVector, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
         static meigen<T> power_iteration(mmatrix<T> & SqrMatrix, mmatrix<T> & InitVector, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
 };
+
+template<typename T>
+meigen<T>::meigen(){};
 
 template<typename T>
 meigen<T>::meigen(mmatrix<T> && Vector, T Value){
@@ -62,7 +67,9 @@ meigen<T> meigen<T>::power_iteration(mmatrix<T> & SqrMatrix, std::function<T(mma
     std::vector<T> RandVec(SqrMatrix.col_size());
 
     std::srand(std::time(0));
-    std::transform(RandVec.begin(), RandVec.end(), RandVec.begin(),rand());
+    std::transform(RandVec.begin(), RandVec.end(), RandVec.begin(),[](T & Tmp){
+        return std::rand();
+    });
     mmatrix<T> RandInitVector(RandVec);
     
     return power_iteration(SqrMatrix, RandInitVector, Norm);
@@ -79,14 +86,14 @@ meigen<T> meigen<T>::power_iteration(mmatrix<T> & SqrMatrix, mmatrix<T> & InitVe
     mmatrix<T> PreVec = InitVector, EigVec(PreVec * SqrMatrix);
     EigVec /= Norm(EigVec);
 
-    double deg = std::acos(PreVec*EigVec.transposition())*180.0 / M_PI;
+    double deg = std::acos((PreVec*EigVec.transposition())[0][0])*180.0 / M_PI;
 
     while(deg < 1e-4){
         EigVec = PreVec * SqrMatrix;
         EigVec /= Norm(EigVec);
-        deg = std::acos(PreVec*EigVec.transposition())*180.0 / M_PI;
+        deg = std::acos((PreVec*EigVec.transposition())[0][0])*180.0 / M_PI;
     }
-    T EigVal = EigVec * SqrMatrix * EigVec;
+    T EigVal = (EigVec * (SqrMatrix * EigVec.transposition()))[0][0];
     
     return meigen(EigVec, EigVal);
 }
