@@ -17,7 +17,10 @@ class meigen{
     private:
         mmatrix<T> _EigenVector;
         T _EigenValue;
-        static T _Threshold = T(1e-4);
+        static double _Threshold;
+        static T _RMin;
+        static T _RMax;
+        static bool _Seeded;
 
     public:
         meigen();
@@ -32,23 +35,45 @@ class meigen{
         static meigen<T> power_iteration(mmatrix<T> && SqrMatrix, mmatrix<T> && InitVector, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
         static meigen<T> power_iteration(mmatrix<T> & SqrMatrix, mmatrix<T> & InitVector, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
 
-        static void threshold(T thresh);
-        static T threshold() const;
+        static void threshold(double thresh);
+        static double threshold();
 };
 
 template<typename T>
-meigen<T>::meigen(){};
+double meigen<T>::_Threshold = 1e-4;
+template<typename T>
+T meigen<T>::_RMax = T(1000);
+template<typename T>
+T meigen<T>::_RMin = T(0);
+template<typename T>
+bool meigen<T>::_Seeded = false;
+
+template<typename T>
+meigen<T>::meigen(){
+    if(!_Seeded){
+        std::srand(std::time(NULL));
+        _Seeded = true;
+    }
+};
 
 template<typename T>
 meigen<T>::meigen(mmatrix<T> && Vector, T Value){
-   _EigenVector = Vector;
-   _EigenValue = Value;
+    _EigenVector = Vector;
+    _EigenValue = Value;
+    if(!_Seeded){
+        std::srand(std::time(NULL));
+        _Seeded = true;
+    }
 }
 
 template<typename T>
 meigen<T>::meigen(mmatrix<T> & Vector, T Value){
     _EigenVector = Vector;
     _EigenValue = Value;
+    if(!_Seeded){
+        std::srand(std::time(NULL));
+        _Seeded = true;
+    }
 }
 
 template<typename T>
@@ -70,9 +95,8 @@ template<typename T>
 meigen<T> meigen<T>::power_iteration(mmatrix<T> & SqrMatrix, std::function<T(mmatrix<T>)> const& Norm){
     std::vector<T> RandVec(SqrMatrix.col_size());
 
-    std::srand(std::time(0));
     std::transform(RandVec.begin(), RandVec.end(), RandVec.begin(),[](T & Tmp){
-        return std::rand();
+        return std::fmod(std::rand(),(_RMax-_RMin + 1)) + _RMin;
     });
     mmatrix<T> RandInitVector(RandVec);
     
@@ -87,12 +111,12 @@ meigen<T> meigen<T>::power_iteration(mmatrix<T> && SqrMatrix, mmatrix<T> && Init
 template<typename T>
 meigen<T> meigen<T>::power_iteration(mmatrix<T> & SqrMatrix, mmatrix<T> & InitVector, std::function<T(mmatrix<T>)> const& Norm){
     //TODO: Throw Exception for wrong matrix size!
-    mmatrix<T> PreVec = InitVector, EigVec(PreVec * SqrMatrix);
+    mmatrix<T> PreVec = InitVector/Norm(InitVector), EigVec(PreVec * SqrMatrix);
     EigVec /= Norm(EigVec);
 
     double deg = std::acos((PreVec*EigVec.transposition())[0][0])*180.0 / M_PI;
-
-    while(deg < 1e-4){
+    while(deg > _Threshold){
+        PreVec = EigVec;
         EigVec = PreVec * SqrMatrix;
         EigVec /= Norm(EigVec);
         deg = std::acos((PreVec*EigVec.transposition())[0][0])*180.0 / M_PI;
@@ -102,10 +126,12 @@ meigen<T> meigen<T>::power_iteration(mmatrix<T> & SqrMatrix, mmatrix<T> & InitVe
     return meigen(EigVec, EigVal);
 }
 
-void meigen<T>::threshold(T Thresh){
+template<typename T>
+void meigen<T>::threshold(double Thresh){
     _Threshold = Thresh;
 }
-T meigen<T>::threshold(){
+template<typename T>
+double meigen<T>::threshold(){
     return _Threshold;
 }
 

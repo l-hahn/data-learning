@@ -161,13 +161,13 @@ mmatrix<T>::mmatrix(const mmatrix<T> & Mat){
 
 template<typename T>
 mmatrix<T>::mmatrix(const std::vector<T> && Mat){
-    resize(1,Mat.size());
+    clear();
     push_back(Mat);
 }
 
 template<typename T>
 mmatrix<T>::mmatrix(const std::vector<T> & Mat){
-    resize(1,Mat.size());
+    clear();
     push_back(Mat);
 }
 
@@ -819,7 +819,6 @@ std::vector< meigen<T> > mmatrix<T>::eigen(mmatrix<T> & Mat, unsigned VecNo){
     mmatrix<T> EigenMat = Mat;
     
     for(unsigned i = 0; i < VecNo; i++){
-        std::cout << "eigen " << i << std::endl;
         Eigens[i] = meigen<T>::power_iteration(EigenMat);
         EigenMat = EigenMat - Eigens[i].vector().transposition()*Eigens[i].vector()*Eigens[i].value();
     }
@@ -849,13 +848,13 @@ template<typename T>
 T mmatrix<T>::l_p_norm(mmatrix<T> & Matrix, unsigned Norm){
     //TODO: Throw Exception for wrong matrix size!
     if(Matrix.row_size() == 1){
-        T UnSqr =  std::accumulate(Matrix.begin()->begin(),Matrix.begin()->end(), 0, [&Norm](const T & SumPart, const T & Element){
+        T UnSqr =  std::accumulate(Matrix.begin()->begin(),Matrix.begin()->end(), T(), [&Norm](T & SumPart, T & Element){
             return SumPart + std::pow(Element,Norm);
         });
         return std::pow(UnSqr, 1.0/(double)Norm);
     }
     else{
-        T UnSqr =  std::accumulate(Matrix.begin(),Matrix.end(), 0, [&Norm](const T & SumPart, const std::vector<T> & Element){
+        T UnSqr =  std::accumulate(Matrix.begin(),Matrix.end(), T(), [&Norm](T & SumPart, std::vector<T> & Element){
             return SumPart + std::pow(*Element.begin(),Norm);
         });
         return std::pow(UnSqr, 1.0/(double)Norm);
