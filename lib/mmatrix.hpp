@@ -123,6 +123,7 @@ class mmatrix{
 
         static const std::function<T(mmatrix<T>)> euclid;
         static const std::function<T(mmatrix<T>)> taxicap;
+        //Todo: lp-norm, infty-norm, cosine distance, hamming distance, edit distance
 
 
     private:

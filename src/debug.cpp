@@ -23,13 +23,14 @@ int main(){
         }
     }
     Input.close();
-    std::cout << "Calc covariance" << std::endl;
+    std::cout << "CovarianceMatrix" << std::endl;
     CovMat = mmatrix<double>::covariance(DataMat);
-    std::cout << CovMat.to_string() << std::endl;
+    std::cout << CovMat.to_string() << std::endl << std::endl;
 
+    std::cout << "EigenValues | EigenVectors" << std::endl;
     std::vector< meigen<double> > EigVec = mmatrix<double>::eigen(CovMat);
     for(auto Eigen : EigVec){
-        std::cout << Eigen.value() << std::endl;
+        std::cout << Eigen.value() << " | " << Eigen.vector().to_string() << std::endl;
     }
 }
 
