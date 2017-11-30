@@ -37,12 +37,18 @@ class mmatrix{
         mmatrix(const std::initializer_list< std::initializer_list<T> > && Mat);
         mmatrix(const std::initializer_list< std::initializer_list<T> > & Mat);
 
-        void push_back(const std::vector<T> && ValList, bool EnsureSize = false);
-        void push_back(const std::vector<T> & ValList, bool EnsureSize = false);
-        void push_back_row(const std::vector<T> && ValList, bool EnsureSize = false);
-        void push_back_row(const std::vector<T> & ValList, bool EnsureSize = false);
-        void push_back_col(const std::vector<T> && ValList, bool EnsureSize = false);
-        void push_back_col(const std::vector<T> & ValList, bool EnsureSize = false);
+        void push_back(const std::vector<T> && ValList);
+        void push_back(const std::vector<T> & ValList);
+        void push_back_row(const std::vector<T> && ValList);
+        void push_back_row(const std::vector<T> & ValList);
+        void push_back_col(const std::vector<T> && ValList);
+        void push_back_col(const std::vector<T> & ValList);
+        void push_back(const mmatrix<T> && Mat);
+        void push_back(const mmatrix<T> & Mat);
+        void push_back_row(const mmatrix<T> && Mat);
+        void push_back_row(const mmatrix<T> & Mat);
+        void push_back_col(const mmatrix<T> && Mat);
+        void push_back_col(const mmatrix<T> & Mat);
 
         void resize(size_t NewSize, T Val=T());
         void resize(size_t NewRow, size_t NewCol, T Val=T());
@@ -210,19 +216,19 @@ mmatrix<T>::mmatrix(const std::initializer_list< std::initializer_list<T> > & Ma
 }
 
 template<typename T>
-void mmatrix<T>::push_back(const std::vector<T> && Mat, bool EnsureSize){
-    push_back(Mat, EnsureSize);
+void mmatrix<T>::push_back(const std::vector<T> && Mat){
+    push_back(Mat);
 }
 template<typename T>
-void mmatrix<T>::push_back(const std::vector<T> & Mat, bool EnsureSize){
-    push_back_row(Mat,EnsureSize);
+void mmatrix<T>::push_back(const std::vector<T> & Mat){
+    push_back_row(Mat);
 }
 template<typename T>
-void mmatrix<T>::push_back_row(const std::vector<T> && Mat, bool EnsureSize){
-    push_back_row(Mat, EnsureSize);
+void mmatrix<T>::push_back_row(const std::vector<T> && Mat){
+    push_back_row(Mat);
 }
 template<typename T>
-void mmatrix<T>::push_back_row(const std::vector<T> & Mat, bool EnsureSize){
+void mmatrix<T>::push_back_row(const std::vector<T> & Mat){
     if(_Dimensions.Col != Mat.size() && _Dimensions.Col != 0){
         throw std::out_of_range("Matrix col-dimensions "+ _Dimensions.to_string()
             + " and [1x" + std::to_string(Mat.size()) + "] are not conforming.");
@@ -234,11 +240,11 @@ void mmatrix<T>::push_back_row(const std::vector<T> & Mat, bool EnsureSize){
     _Dimensions.Row++;
 }
 template<typename T>
-void mmatrix<T>::push_back_col(const std::vector<T> && Mat, bool EnsureSize){
-    push_back_col(Mat, EnsureSize);
+void mmatrix<T>::push_back_col(const std::vector<T> && Mat){
+    push_back_col(Mat);
 }
 template<typename T>
-void mmatrix<T>::push_back_col(const std::vector<T> & Mat, bool EnsureSize){
+void mmatrix<T>::push_back_col(const std::vector<T> & Mat){
     if(_Dimensions.Row != Mat.size() && _Dimensions.Row != 0){
         throw std::out_of_range("Matrix row-dimensions "+ _Dimensions.to_string()
             + " and [1x" + std::to_string(Mat.size()) + "] are not conforming.");
@@ -252,6 +258,57 @@ void mmatrix<T>::push_back_col(const std::vector<T> & Mat, bool EnsureSize){
         return Vec;
     });
     _Dimensions.Col++;
+}
+
+template<typename T>
+void mmatrix<T>::push_back(const mmatrix<T> && Mat){
+    push_back_row(Mat);
+}
+
+template<typename T>
+void mmatrix<T>::push_back(const mmatrix<T> & Mat){
+    push_back_row(Mat);
+}
+
+template<typename T>
+void mmatrix<T>::push_back_row(const mmatrix<T> && Mat){
+    push_back(Mat);
+}
+template<typename T>
+void mmatrix<T>::push_back_row(const mmatrix<T> & Mat){
+    if(_Dimensions.Col != Mat.col_size() && _Dimensions.Col != 0){
+        throw std::out_of_range("Matrix col-dimensions "+ _Dimensions.to_string()
+            + " and " + Mat._Dimensions.to_string() + " are not conforming.");
+    }
+    if( _Dimensions.Col == 0){
+        _Dimensions.Col = Mat.col_size();
+    }
+    for(std::vector<T> Vec : Mat._Matrix){
+        _Matrix.push_back(Vec);
+        _Dimensions.Row++;
+    }
+}
+template<typename T>
+void mmatrix<T>::push_back_col(const mmatrix<T> && Mat){
+    push_back_col(Mat);
+}
+template<typename T>
+void mmatrix<T>::push_back_col(const mmatrix<T> & Mat){
+    if(_Dimensions.Row != Mat.row_size() && _Dimensions.Row != 0){
+        throw std::out_of_range("Matrix row-dimensions "+ _Dimensions.to_string()
+            + " and " + Mat._Dimensions.to_string() + " are not conforming.");
+    }
+    if(_Dimensions.Row == 0){
+        _Dimensions.Row = Mat.row_size();
+        _Matrix.resize(Mat.row_size());
+    }
+    for(std::vector<T> MVec : Mat._Matrix){
+        std::transform(_Matrix.begin(),_Matrix.end(),MVec.begin(),_Matrix.begin(),[](std::vector<T> & Vec, T Val){
+            Vec.push_back(Val);
+            return Vec;
+        });
+        _Dimensions.Col++;
+    }
 }
 
 template<typename T>

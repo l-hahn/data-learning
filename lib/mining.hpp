@@ -35,8 +35,10 @@ namespace data_learning{
                 mmatrix<T> data_matrix();
                 std::vector< meigen<T> > eigen();
 
-                mmatrix<T> eigen_spectrum();
-                mmatrix<T> principle_components();
+                mmatrix<T> eigen_spectrum(bool normalise = true);
+                mmatrix<T> loadings(unsigned LoadNumber = 0);
+                mmatrix<T> loading(unsigned LoadIdx);
+                mmatrix<T> principle_components(unsigned CompNumber = 0);
                 mmatrix<T> principle_component(unsigned CompIdx);
 
         };
@@ -92,20 +94,46 @@ namespace data_learning{
         }
 
         template<typename T>
-        mmatrix<T> pca<T>::eigen_spectrum(){
+        mmatrix<T> pca<T>::eigen_spectrum(bool normalise){
             mmatrix<T> EigSpec = mmatrix<T>(1,_EigenNumber);
+            T Sum = 0;
             for(unsigned i = 0; i < _EigenNumber; i++){
-                EigSpec[0][i] = _Eigens.value();
+                EigSpec[0][i] = _Eigens[i].value();
+                Sum += _Eigens[i].value();
+            }
+            if(normalise){
+                std::transform(EigSpec[0].begin(), EigSpec[0].end(), EigSpec[0].begin(), [Sum](T & Val){
+                    return Val/Sum;
+                });
             }
             return EigSpec;
         }
         template<typename T>
-        mmatrix<T> pca<T>::principle_components(){
-            
+        mmatrix<T> pca<T>::loadings(unsigned LoadNumber){
+            if(LoadNumber == 0){
+                LoadNumber = _EigenNumber;
+            }
+            mmatrix<T> Loadings = mmatrix<T>();
+            for(meigen<T> Eigen : _Eigens){
+                Loadings.push_back(Eigen.vector());
+            }
+            return Loadings;
+        }
+        template<typename T>
+        mmatrix<T> pca<T>::loading(unsigned LoadIdx){
+            return _Eigens[LoadIdx].vector();
+        }
+        template<typename T>
+        mmatrix<T> pca<T>::principle_components(unsigned CompNumber){
+            if(CompNumber == 0){
+                CompNumber = _EigenNumber;
+            }
+            mmatrix<T> PrinComp = _DataMatrix*loadings().transposition();
+            return PrinComp;
         }
         template<typename T>
         mmatrix<T> pca<T>::principle_component(unsigned CompIdx){
-
+            return _DataMatrix*_Eigens[CompIdx].vector().transposition();
         }
 
       /*----------------------------------------------------------------------*/

@@ -13,11 +13,11 @@ void split(const std::string &s, char delim, std::vector<double> &elems);
 std::vector<double> split(const std::string &s, char delim);
 
 int main(){
-    mmatrix<double> DataMat, CovMat;
+    mmatrix<double> DataMat, EigSpec, PrinComp, EigenVectors;
     std::vector<double> data;
     std::string Line;
 
-    std::ifstream Input("test-data/Hidden.data");
+    std::ifstream Input("test-data/Hidden.dat");
     while(!Input.eof()){
         std::getline(Input,Line);
         data = split(Line, ' ');
@@ -26,19 +26,36 @@ int main(){
         }
     }
     Input.close();
-    std::cout << "CovarianceMatrix" << std::endl;
-    CovMat = mmatrix<double>::covariance(DataMat);
-    std::cout << CovMat.to_string() << std::endl << std::endl;
-
-    std::cout << "EigenValues | EigenVectors" << std::endl;
-    std::vector< meigen<double> > EigVec = mmatrix<double>::eigen(CovMat);
-    for(auto Eigen : EigVec){
-        std::cout << Eigen.value() << " | " << Eigen.vector().to_string() << std::endl;
+    
+    std::ofstream Output("test-data/EigenSpectum.dat"); 
+    data_learning::mining::pca<double> PCA = data_learning::mining::pca<double>(DataMat);
+    EigSpec = PCA.eigen_spectrum();
+    for(unsigned i = 0; i < EigSpec.col_size(); i++){
+        Output << EigSpec[0][i] << std::endl;
     }
+    Output.close();
 
-    //std::vector< std::vector<double> > TestVV = {{1,2,3},{4,5,6},{7,8,9}};
-    mmatrix<double> TestM = {1,2,3}, TestM2 = {1,2,3};
-    std::cout << "\n" << (TestM2.transposition()*TestM).to_string() << std::endl;
+    Output = std::ofstream("test-data/PrincipleComponents.dat");
+    PrinComp = PCA.principle_components();
+    for(unsigned i = 0; i < PrinComp.row_size(); i++){
+        for(unsigned j = 0; j < PrinComp.col_size()-1; j++){
+            Output << PrinComp[i][j] << "\t";
+        }
+        Output << PrinComp[i][PrinComp.col_size()-1] << std::endl;
+    }
+    Output.close();
+
+    Output = std::ofstream("test-data/Loadings.dat");
+    EigenVectors = PCA.loadings();
+    for(unsigned i = 0; i < EigenVectors.row_size(); i++){
+        for(unsigned j = 0; j < EigenVectors.col_size()-1; j++){
+            Output << EigenVectors[i][j] << "\t";
+        }
+        Output << EigenVectors[i][EigenVectors.col_size()-1] << std::endl;
+    }
+    Output.close();
+
+    return 0;
 }
 
 void split(const std::string &s, char delim, std::vector<double> &elems){
