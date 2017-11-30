@@ -5,6 +5,9 @@
 #include <sstream>
 
 #include "../lib/mmatrix.hpp"
+#include "../lib/mining.hpp"
+#include "../lib/learning.hpp"
+#include "../lib/clustering.hpp"
 
 void split(const std::string &s, char delim, std::vector<double> &elems);
 std::vector<double> split(const std::string &s, char delim);
