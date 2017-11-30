@@ -52,11 +52,13 @@ namespace data_learning{
         void pca<T>::set_matrix(mmatrix<T> && Mat){
             _Eigens.clear();
             _DataMatrix = Mat;
+            _CovMatrix = mmatrix<T>::covariance(Mat);
         }
         template<typename T>
         void pca<T>::set_matrix(mmatrix<T> & Mat){
             _Eigens.clear();
             _DataMatrix = Mat;
+            _CovMatrix = mmatrix<T>::covariance(Mat);
         }
 
         template<typename T>

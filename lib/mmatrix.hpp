@@ -129,7 +129,7 @@ class mmatrix{
 
         static const std::function<T(mmatrix<T>)> euclid;
         static const std::function<T(mmatrix<T>)> taxicap;
-        //Todo: lp-norm, infty-norm, cosine distance, hamming distance, edit distance
+        //TODO: lp-norm, infty-norm, cosine distance, hamming distance, edit distance
 
 
     private:
@@ -882,7 +882,9 @@ T mmatrix<T>::vector_norm(mmatrix<T> & Vector, std::function<T(mmatrix<T>)> cons
 
 template<typename T>
 T mmatrix<T>::l_p_norm(mmatrix<T> & Matrix, unsigned Norm){
-    //TODO: Throw Exception for wrong matrix size!
+    if(Matrix.row_size() != 1 && Matrix.col_size() != 1){
+        throw std::out_of_range("Matrix not in vector format; either row or column dimension must be one.");
+    }
     if(Matrix.row_size() == 1){
         T UnSqr =  std::accumulate(Matrix.begin()->begin(),Matrix.begin()->end(), T(), [&Norm](T & SumPart, T & Element){
             return SumPart + std::pow(Element,Norm);

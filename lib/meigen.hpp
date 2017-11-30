@@ -110,7 +110,9 @@ meigen<T> meigen<T>::power_iteration(mmatrix<T> && SqrMatrix, mmatrix<T> && Init
 
 template<typename T>
 meigen<T> meigen<T>::power_iteration(mmatrix<T> & SqrMatrix, mmatrix<T> & InitVector, std::function<T(mmatrix<T>)> const& Norm){
-    //TODO: Throw Exception for wrong matrix size!
+    if(SqrMatrix.row_size() != SqrMatrix.col_size()){
+        throw std::out_of_range("Matrix has to be square matix, but it is"+SqrMatrix.size().to_string()+".");
+    }
     mmatrix<T> PreVec = InitVector/Norm(InitVector), EigVec(PreVec * SqrMatrix);
     EigVec /= Norm(EigVec);
 
