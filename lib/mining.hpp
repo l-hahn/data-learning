@@ -32,6 +32,7 @@ namespace data_learning{
                 std::vector<T> eigen_spectrum();
                 mmatrix<T> principle_components(unsigned CompNumber = 0);
                 mmatrix<T> principle_component(unsigned CompIdx);
+
         };
 
         template<typename T>
@@ -49,13 +50,13 @@ namespace data_learning{
 
         template<typename T>
         void pca<T>::set_matrix(mmatrix<T> && Mat){
-            _DataMatrix = Mat;
             _Eigens.clear();
+            _DataMatrix = Mat;
         }
         template<typename T>
         void pca<T>::set_matrix(mmatrix<T> & Mat){
-            _DataMatrix = Mat;
             _Eigens.clear();
+            _DataMatrix = Mat;
         }
 
         template<typename T>

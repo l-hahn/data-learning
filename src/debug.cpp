@@ -35,6 +35,10 @@ int main(){
     for(auto Eigen : EigVec){
         std::cout << Eigen.value() << " | " << Eigen.vector().to_string() << std::endl;
     }
+
+    //std::vector< std::vector<double> > TestVV = {{1,2,3},{4,5,6},{7,8,9}};
+    mmatrix<double> TestM = {1,2,3}, TestM2 = {1,2,3};
+    std::cout << "\n" << (TestM2.transposition()*TestM).to_string() << std::endl;
 }
 
 void split(const std::string &s, char delim, std::vector<double> &elems){

@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <functional>
 #include <iterator>
+#include <initializer_list>
 #include <numeric>
 #include <omp.h>
 #include <stdexcept>
@@ -29,7 +30,12 @@ class mmatrix{
         mmatrix(const mmatrix<T> & Mat);
         mmatrix(const std::vector<T> && Mat);
         mmatrix(const std::vector<T> & Mat);
-
+        mmatrix(const std::initializer_list<T> && Mat);
+        mmatrix(const std::initializer_list<T> & Mat);
+        mmatrix(const std::vector< std::vector<T> > && Mat);
+        mmatrix(const std::vector< std::vector<T> > & Mat);
+        mmatrix(const std::initializer_list< std::initializer_list<T> > && Mat);
+        mmatrix(const std::initializer_list< std::initializer_list<T> > & Mat);
 
         void push_back(const std::vector<T> && ValList, bool EnsureSize = false);
         void push_back(const std::vector<T> & ValList, bool EnsureSize = false);
@@ -130,6 +136,8 @@ class mmatrix{
         static T l_p_norm(mmatrix<T> & Matrix, unsigned Norm);
         static T eucl_norm(mmatrix<T>  Matrix);
         static T taxicap_Norm(mmatrix<T>  Matrix);
+        static mdimension check_length_input(const std::vector< std::vector<T> > & Mat);
+        static mdimension check_length_input(const std::initializer_list< std::initializer_list<T> > & Mat);
 };
 
 template<typename T>
@@ -152,26 +160,53 @@ template<typename T>
 mmatrix<T>::mmatrix(const mmatrix<T> && Mat){
     _Matrix = Mat._Matrix;
     _Dimensions = Mat._Dimensions;
-
 }
 template<typename T>
 mmatrix<T>::mmatrix(const mmatrix<T> & Mat){
     _Matrix = Mat._Matrix;
     _Dimensions = Mat._Dimensions;
 }
-
 template<typename T>
 mmatrix<T>::mmatrix(const std::vector<T> && Mat){
-    clear();
     push_back(Mat);
+}
+template<typename T>
+mmatrix<T>::mmatrix(const std::vector<T> & Mat){
+    push_back(Mat);
+}
+template<typename T>
+mmatrix<T>::mmatrix(const std::initializer_list<T> && Mat){
+    _Dimensions = mdimension(1,Mat.size());
+    _Matrix = std::vector< std::vector<T> >(1);
+    _Matrix.begin()->insert(_Matrix.begin()->end(),Mat.begin(),Mat.end());
+}
+template<typename T>
+mmatrix<T>::mmatrix(const std::initializer_list<T> & Mat){
+    _Dimensions = mdimension(1,Mat.size());
+    _Matrix = std::vector< std::vector<T> >(1);
+    _Matrix.begin()->insert(_Matrix.begin()->end(),Mat.begin(),Mat.end());
+}
+template<typename T>
+mmatrix<T>::mmatrix(const std::vector< std::vector<T> > && Mat){
+    _Dimensions = mmatrix<T>::check_length_input(Mat);
+    _Matrix = Mat;
+}
+template<typename T>
+mmatrix<T>::mmatrix(const std::vector< std::vector<T> > & Mat){
+    _Dimensions = mmatrix<T>::check_length_input(Mat);
+    _Matrix = Mat;
 }
 
 template<typename T>
-mmatrix<T>::mmatrix(const std::vector<T> & Mat){
-    clear();
-    push_back(Mat);
+mmatrix<T>::mmatrix(const std::initializer_list< std::initializer_list<T> > && Mat){
+    _Dimensions = mmatrix<T>::check_length_input(Mat);
+    _Matrix.insert(_Matrix.end(),Mat.begin(),Mat.end());
 }
-
+template<typename T>
+mmatrix<T>::mmatrix(const std::initializer_list< std::initializer_list<T> > & Mat){
+    _Dimensions = mmatrix<T>::check_length_input(Mat);
+    _Matrix.insert(_Matrix.end(),Mat.begin(),Mat.end());
+}
 
 template<typename T>
 void mmatrix<T>::push_back(const std::vector<T> && Mat, bool EnsureSize){
@@ -875,5 +910,40 @@ template<typename T>
 const std::function<T(mmatrix<T>)> mmatrix<T>::euclid = &mmatrix<T>::eucl_norm;
 template<typename T>
 const std::function<T(mmatrix<T>)> mmatrix<T>::taxicap = &mmatrix<T>::taxicap_norm;
+
+
+template<typename T>
+mdimension mmatrix<T>::check_length_input(const std::vector< std::vector<T> > & Mat){
+    mdimension MatDim;
+    if(Mat.size() != 0){
+        MatDim = mdimension(Mat.size(),Mat.begin()->size());
+        for(auto iter = Mat.begin()+1; iter < Mat.end(); iter++){
+            if(iter->size() != MatDim.Col){
+                throw std::out_of_range("Column dimensions of submitted vector matrix are not conforming.");
+            }
+        }
+    }
+    else{
+        throw std::out_of_range("Empty matrix submitted.");
+    }
+    return MatDim;
+}
+
+template<typename T>
+mdimension mmatrix<T>::check_length_input(const std::initializer_list< std::initializer_list<T> > & Mat){
+    mdimension MatDim;
+    if(Mat.size() != 0){
+        MatDim = mdimension(Mat.size(),Mat.begin()->size());
+        for(auto iter = Mat.begin()+1; iter < Mat.end(); iter++){
+            if(iter->size() != MatDim.Col){
+                throw std::out_of_range("Column dimensions of submitted vector matrix are not conforming.");
+            }
+        }
+    }
+    else{
+        throw std::out_of_range("Empty matrix submitted.");
+    }
+    return MatDim;
+}
 
 #endif
