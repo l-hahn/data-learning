@@ -108,6 +108,7 @@ class mmatrix{
 
         std::string to_string(char Delimiter = ' ', char Separator = '\n', char Border = 0);
 
+        std::vector< std::vector<T> > vector_matrix() const;
         mdimension dimension() const;
         mdimension size() const;
         size_t row_size() const;
@@ -782,6 +783,10 @@ std::string mmatrix<T>::to_string(char Delimiter, char Separator,  char Border){
     return MatStr;
 }
 
+template<typename T>
+std::vector< std::vector<T> > mmatrix<T>::vector_matrix() const{
+    return _Matrix;
+}
 template<typename T>
 mdimension mmatrix<T>::dimension() const{
     return _Dimensions;

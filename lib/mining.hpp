@@ -23,14 +23,20 @@ namespace data_learning{
                 pca(mmatrix<T> && Mat, unsigned EigNumber = 0);
                 pca(mmatrix<T> & Mat, unsigned EigNumber = 0);
 
+
                 void set_matrix(mmatrix<T> && Mat);
                 void set_matrix(mmatrix<T> & Mat);
 
                 void eigen_number(unsigned EigNumber);
                 unsigned eigen_number();
 
-                std::vector<T> eigen_spectrum();
-                mmatrix<T> principle_components(unsigned CompNumber = 0);
+
+                mmatrix<T> cov_matrix();
+                mmatrix<T> data_matrix();
+                std::vector< meigen<T> > eigen();
+
+                mmatrix<T> eigen_spectrum();
+                mmatrix<T> principle_components();
                 mmatrix<T> principle_component(unsigned CompIdx);
 
         };
@@ -53,12 +59,14 @@ namespace data_learning{
             _Eigens.clear();
             _DataMatrix = Mat;
             _CovMatrix = mmatrix<T>::covariance(Mat);
+            _Eigens = mmatrix<T>::eigen(_CovMatrix, _EigenNumber);
         }
         template<typename T>
         void pca<T>::set_matrix(mmatrix<T> & Mat){
             _Eigens.clear();
             _DataMatrix = Mat;
             _CovMatrix = mmatrix<T>::covariance(Mat);
+            _Eigens = mmatrix<T>::eigen(_CovMatrix, _EigenNumber);
         }
 
         template<typename T>
@@ -68,6 +76,36 @@ namespace data_learning{
         template<typename T>
         unsigned pca<T>::eigen_number(){
             return _EigenNumber;
+        }
+
+        template<typename T>
+        mmatrix<T> pca<T>::cov_matrix(){
+            return _CovMatrix;
+        }
+        template<typename T>
+        mmatrix<T> pca<T>::data_matrix(){
+            return _DataMatrix;
+        }
+        template<typename T>
+        std::vector< meigen<T> > pca<T>::eigen(){
+            return _Eigens;
+        }
+
+        template<typename T>
+        mmatrix<T> pca<T>::eigen_spectrum(){
+            mmatrix<T> EigSpec = mmatrix<T>(1,_EigenNumber);
+            for(unsigned i = 0; i < _EigenNumber; i++){
+                EigSpec[0][i] = _Eigens.value();
+            }
+            return EigSpec;
+        }
+        template<typename T>
+        mmatrix<T> pca<T>::principle_components(){
+            
+        }
+        template<typename T>
+        mmatrix<T> pca<T>::principle_component(unsigned CompIdx){
+
         }
 
       /*----------------------------------------------------------------------*/
