@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <omp.h>
 
 #include "../lib/mmatrix.hpp"
 #include "../lib/mining.hpp"
@@ -17,7 +18,15 @@ int main(){
     std::vector<double> data;
     std::string Line;
 
-    std::ifstream Input("test-data/Hidden.dat");
+    //mmatrix<double>::thread(3);
+
+    DataMat.resize(1000);
+    DataMat = DataMat * DataMat.transposition();
+    std::cout << DataMat.size().to_string() << std::endl;
+
+    return 0;
+
+    std::ifstream Input("test-data/Hidden2.dat");
     while(!Input.eof()){
         std::getline(Input,Line);
         data = split(Line, ' ');
@@ -29,6 +38,7 @@ int main(){
     
     std::ofstream Output("test-data/EigenSpectum.dat"); 
     data_learning::mining::pca<double> PCA = data_learning::mining::pca<double>(DataMat);
+    std::cout << PCA.cov_matrix().to_string() << std::endl;
     EigSpec = PCA.eigen_spectrum();
     for(unsigned i = 0; i < EigSpec.col_size(); i++){
         Output << EigSpec[0][i] << std::endl;
