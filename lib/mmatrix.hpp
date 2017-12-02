@@ -126,16 +126,19 @@ class mmatrix{
         iterator begin();
         iterator end();
 
+        static mmatrix<T> repmat(mmatrix<T> && Mat, unsigned Row = 1, unsigned Col = 1);
+        static mmatrix<T> repmat(mmatrix<T> & Mat, unsigned Row = 1, unsigned Col = 1);
+
         static mmatrix<T> covariance(mmatrix<T> && Mat);
         static mmatrix<T> covariance(mmatrix<T> & Mat);
         static mmatrix<T> reduced_covariance(mmatrix<T> && Mat, std::vector< meigen<T> > && Eigens);
         static mmatrix<T> reduced_covariance(mmatrix<T> & Mat, std::vector< meigen<T> > & Eigens);
         static mmatrix<T> gramian(mmatrix<T> && Mat);
         static mmatrix<T> gramian(mmatrix<T> & Mat);
-        static mmatrix<T> distance(mmatrix<T> && Mat, unsigned Norm = 2);
-        static mmatrix<T> distance(mmatrix<T> & Mat, unsigned Norm = 2);
-        static mmatrix<T> distance(mmatrix<T> && Mat, std::function<T(mmatrix<T>)> const& Norm);
-        static mmatrix<T> distance(mmatrix<T> & Mat, std::function<T(mmatrix<T>)> const& Norm);
+        static mmatrix<T> distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, unsigned Norm = 2);
+        static mmatrix<T> distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, unsigned Norm = 2);
+        static mmatrix<T> distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, std::function<T(mmatrix<T>)> const& Norm);
+        static mmatrix<T> distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::function<T(mmatrix<T>)> const& Norm);
         static std::vector< meigen<T> > eigen(mmatrix<T> && Mat, unsigned VecNo = 0);
         static std::vector< meigen<T> > eigen(mmatrix<T> & Mat, unsigned VecNo = 0);
 
@@ -146,12 +149,24 @@ class mmatrix{
 
         static const std::function<T(mmatrix<T>)> euclid;
         static const std::function<T(mmatrix<T>)> taxicap;
+
+        static mmatrix<T> vector_norms(mmatrix<T> && Matrix, unsigned Norm = 2);
+        static mmatrix<T> vector_norms(mmatrix<T> & Matrix, unsigned Norm = 2);
+        static mmatrix<T> vector_norms(mmatrix<T> && Matrix, std::function<mmatrix<T>(mmatrix<T>)> const& Norm);
+        static mmatrix<T> vector_norms(mmatrix<T> & Matrix, std::function<mmatrix<T>(mmatrix<T>)> const& Norm);
+
+        static const std::function<mmatrix<T>(mmatrix<T>)> euclids;
+        static const std::function<mmatrix<T>(mmatrix<T>)> taxicaps;
+
         //TODO: lp-norm, infty-norm, cosine distance, hamming distance, edit distance
 
         static void thread(unsigned thrd = 2);
         static unsigned thread();
 
     private:
+        static mmatrix<T> l_p_norms(mmatrix<T> & Matrix, unsigned Norm);
+        static mmatrix<T> eucl_norms(mmatrix<T>  Matrix);
+        static mmatrix<T> taxicap_norms(mmatrix<T>  Matrix);
         static T l_p_norm(mmatrix<T> & Matrix, unsigned Norm);
         static T eucl_norm(mmatrix<T>  Matrix);
         static T taxicap_Norm(mmatrix<T>  Matrix);
@@ -243,7 +258,7 @@ void mmatrix<T>::push_back_row(const std::vector<T> && Mat){
 template<typename T>
 void mmatrix<T>::push_back_row(const std::vector<T> & Mat){
     if(_Dimensions.Col != Mat.size() && _Dimensions.Col != 0){
-        throw std::out_of_range("Matrix col-dimensions "+ _Dimensions.to_string()
+        throw std::out_of_range("push_back_row: Matrix col-dimensions "+ _Dimensions.to_string()
             + " and [1x" + std::to_string(Mat.size()) + "] are not conforming.");
     }
     if( _Dimensions.Col == 0){
@@ -259,7 +274,7 @@ void mmatrix<T>::push_back_col(const std::vector<T> && Mat){
 template<typename T>
 void mmatrix<T>::push_back_col(const std::vector<T> & Mat){
     if(_Dimensions.Row != Mat.size() && _Dimensions.Row != 0){
-        throw std::out_of_range("Matrix row-dimensions "+ _Dimensions.to_string()
+        throw std::out_of_range("push_back_col: Matrix row-dimensions "+ _Dimensions.to_string()
             + " and [1x" + std::to_string(Mat.size()) + "] are not conforming.");
     }
     if(_Dimensions.Row == 0){
@@ -290,7 +305,7 @@ void mmatrix<T>::push_back_row(const mmatrix<T> && Mat){
 template<typename T>
 void mmatrix<T>::push_back_row(const mmatrix<T> & Mat){
     if(_Dimensions.Col != Mat.col_size() && _Dimensions.Col != 0){
-        throw std::out_of_range("Matrix col-dimensions "+ _Dimensions.to_string()
+        throw std::out_of_range("push_back_row: Matrix col-dimensions "+ _Dimensions.to_string()
             + " and " + Mat._Dimensions.to_string() + " are not conforming.");
     }
     if( _Dimensions.Col == 0){
@@ -308,7 +323,7 @@ void mmatrix<T>::push_back_col(const mmatrix<T> && Mat){
 template<typename T>
 void mmatrix<T>::push_back_col(const mmatrix<T> & Mat){
     if(_Dimensions.Row != Mat.row_size() && _Dimensions.Row != 0){
-        throw std::out_of_range("Matrix row-dimensions "+ _Dimensions.to_string()
+        throw std::out_of_range("push_back_col: Matrix row-dimensions "+ _Dimensions.to_string()
             + " and " + Mat._Dimensions.to_string() + " are not conforming.");
     }
     if(_Dimensions.Row == 0){
@@ -390,7 +405,7 @@ mmatrix<T>& mmatrix<T>::operator-=(mmatrix<T> && Mat){
 template<typename T>
 mmatrix<T>& mmatrix<T>::operator+=(mmatrix<T> & Mat){
     if((_Dimensions.Row - Mat._Dimensions.Row) != 0 || (_Dimensions.Row - Mat._Dimensions.Row) != 0){
-        throw std::out_of_range("Matrix dimensions "+ _Dimensions.to_string()
+        throw std::out_of_range("operator+=: Matrix dimensions "+ _Dimensions.to_string()
             + Mat._Dimensions.to_string() + " are not conforming.");
     }
     std::vector<T> * RowsL = &_Matrix.front();
@@ -415,7 +430,7 @@ mmatrix<T>& mmatrix<T>::operator+=(mmatrix<T> & Mat){
 template<typename T>
 mmatrix<T>& mmatrix<T>::operator-=(mmatrix<T> & Mat){
     if((_Dimensions.Row - Mat._Dimensions.Row) != 0 || (_Dimensions.Row - Mat._Dimensions.Row) != 0){
-        throw std::out_of_range("Matrix dimensions "+ _Dimensions.to_string()
+        throw std::out_of_range("operator-=: Matrix dimensions "+ _Dimensions.to_string()
             + Mat._Dimensions.to_string() + " are not conforming.");
     }
     std::vector<T> * RowsL = &_Matrix.front();
@@ -448,7 +463,7 @@ mmatrix<T>& mmatrix<T>::operator-=(std::vector<T> && Mat){
 template<typename T>
 mmatrix<T>& mmatrix<T>::operator+=(std::vector<T> & Mat){
     if((_Dimensions.Col - Mat.size()) != 0){
-        throw std::out_of_range("Matrix dimensions "+ _Dimensions.to_string()
+        throw std::out_of_range("operator+=: Matrix dimensions "+ _Dimensions.to_string()
             + " and [" + std::to_string(Mat.size()) + "x1] are not conforming.");
     }
     mmatrix<T> NewMat(_Dimensions.Row,Mat.size());
@@ -473,7 +488,7 @@ mmatrix<T>& mmatrix<T>::operator+=(std::vector<T> & Mat){
 template<typename T>
 mmatrix<T>& mmatrix<T>::operator-=(std::vector<T> & Mat){
     if((_Dimensions.Col - Mat.size()) != 0){
-        throw std::out_of_range("Matrix dimensions "+ _Dimensions.to_string()
+        throw std::out_of_range("operator-=: Matrix dimensions "+ _Dimensions.to_string()
             + " and [" + std::to_string(Mat.size()) + "x1] are not conforming.");
     }
     mmatrix<T> NewMat(_Dimensions.Row,Mat.size());
@@ -545,7 +560,7 @@ mmatrix<T> mmatrix<T>::operator-(mmatrix<T> && Mat){
 template<typename T>
 mmatrix<T> mmatrix<T>::operator+(mmatrix<T> & Mat){
     if((_Dimensions.Row - Mat._Dimensions.Row) != 0 || (_Dimensions.Row - Mat._Dimensions.Row) != 0){
-        throw std::out_of_range("Matrix dimensions "+ _Dimensions.to_string()
+        throw std::out_of_range("operator+: Matrix dimensions "+ _Dimensions.to_string()
             + Mat._Dimensions.to_string() + " are not conforming.");
     }
     mmatrix<T> NewMat(_Dimensions);
@@ -573,7 +588,7 @@ mmatrix<T> mmatrix<T>::operator+(mmatrix<T> & Mat){
 template<typename T>
 mmatrix<T> mmatrix<T>::operator-(mmatrix<T> & Mat){
     if((_Dimensions.Row - Mat._Dimensions.Row) != 0 || (_Dimensions.Row - Mat._Dimensions.Row) != 0){
-        throw std::out_of_range("Matrix dimensions "+ _Dimensions.to_string()
+        throw std::out_of_range("operator-: Matrix dimensions "+ _Dimensions.to_string()
             + Mat._Dimensions.to_string() + " are not conforming.");
     }
     mmatrix<T> NewMat(_Dimensions);
@@ -947,7 +962,7 @@ void mmatrix<T>::transpose(){
 template<typename T>
 mmatrix<T> mmatrix<T>::entry_mult(mmatrix<T> && Mat){
     if((_Dimensions.Row - Mat._Dimensions.Row) != 0 || (_Dimensions.Row - Mat._Dimensions.Row) != 0){
-        throw std::out_of_range("Matrix dimensions "+ _Dimensions.to_string()
+        throw std::out_of_range("entry_mult: Matrix dimensions "+ _Dimensions.to_string()
             + Mat._Dimensions.to_string() + " are not conforming.");
     }
     return entry_mult(Mat);
@@ -955,7 +970,7 @@ mmatrix<T> mmatrix<T>::entry_mult(mmatrix<T> && Mat){
 template<typename T>
 mmatrix<T> mmatrix<T>::entry_mult(mmatrix<T> & Mat){
     if((_Dimensions.Row - Mat._Dimensions.Row) != 0 || (_Dimensions.Row - Mat._Dimensions.Row) != 0){
-        throw std::out_of_range("Matrix dimensions "+ _Dimensions.to_string()
+        throw std::out_of_range("entry_mult: Matrix dimensions "+ _Dimensions.to_string()
             + Mat._Dimensions.to_string() + " are not conforming.");
     }
     mmatrix<T> NewMat(_Dimensions);
@@ -983,7 +998,7 @@ mmatrix<T> mmatrix<T>::entry_mult(mmatrix<T> & Mat){
 template<typename T>
 mmatrix<T>& mmatrix<T>::equal_entry_mult(mmatrix<T> && Mat){
     if((_Dimensions.Row - Mat._Dimensions.Row) != 0 || (_Dimensions.Row - Mat._Dimensions.Row) != 0){
-        throw std::out_of_range("Matrix dimensions "+ _Dimensions.to_string()
+        throw std::out_of_range("equal_entry_mult: Matrix dimensions "+ _Dimensions.to_string()
             + Mat._Dimensions.to_string() + " are not conforming.");
     }
     return equal_entry_mult(Mat);
@@ -991,7 +1006,7 @@ mmatrix<T>& mmatrix<T>::equal_entry_mult(mmatrix<T> && Mat){
 template<typename T>
 mmatrix<T>& mmatrix<T>::equal_entry_mult(mmatrix<T> & Mat){
     if((_Dimensions.Row - Mat._Dimensions.Row) != 0 || (_Dimensions.Row - Mat._Dimensions.Row) != 0){
-        throw std::out_of_range("Matrix dimensions "+ _Dimensions.to_string()
+        throw std::out_of_range("equal_entry_mult: Matrix dimensions "+ _Dimensions.to_string()
             + Mat._Dimensions.to_string() + " are not conforming.");
     }
     std::vector<T> * RowsL = &_Matrix.front();
@@ -1058,6 +1073,51 @@ template<typename T>
 typename std::vector< std::vector<T> >::iterator mmatrix<T>::end(){
     return _Matrix.end();
 }
+
+/*---static-------------------------------------------------------------------*/
+template<typename T>
+mmatrix<T> mmatrix<T>::repmat(mmatrix<T> && Mat, unsigned Row, unsigned Col){
+    return repmat(Mat, Row, Col);
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::repmat(mmatrix<T> & Mat, unsigned Row, unsigned Col){
+    mmatrix<T> RepMat(Mat);
+    if(Row == 0 || Col == 0){
+        throw std::out_of_range("repmat: column and row factor has to be non-zero.");
+    }
+    RepMat._Dimensions = mdimension(Mat._Dimensions.Row*Row,Mat._Dimensions.Col*Col);
+
+    #ifdef _OPENMP
+    #pragma omp parallel
+    {
+        #pragma omp for
+    #endif
+    for(unsigned i = 0; i < Mat.row_size(); i++){
+        for(unsigned j = 1; j < Col; j++){
+            RepMat[i].insert(RepMat[i].end(),Mat[i].begin(),Mat[i].end());
+        }
+    }
+    #ifdef _OPENMP
+    }
+    #endif
+
+    RepMat._Matrix.resize(Mat.row_size()*Row);
+
+    #ifdef _OPENMP
+    #pragma omp parallel
+    {
+        #pragma omp for
+    #endif
+        for(unsigned i = Mat.row_size(); i < RepMat.row_size(); i++){
+            RepMat[i] = RepMat[i%Mat.row_size()];
+        }
+    #ifdef _OPENMP
+    }
+    #endif
+
+    return RepMat;
+}
+
 
 
 template<typename T>
@@ -1127,7 +1187,7 @@ mmatrix<T> gramian(mmatrix<T> && Mat){
 template<typename T>
 mmatrix<T> gramian(mmatrix<T> & Mat){
     if(Mat.row_size() != Mat.col_size()){
-        throw std::out_of_range("Matrix has to be square matix, but it is "+Mat.size().to_string()+".");
+        throw std::out_of_range("gramian: Matrix has to be square matix, but it is "+Mat.size().to_string()+".");
     }
     mmatrix<T> GramianMat = Mat.entry_mult(Mat);
     std::vector<T> RowMean(GramianMat.row_size(),T()), ColMean(GramianMat.col_size(),T());
@@ -1204,19 +1264,19 @@ mmatrix<T> gramian(mmatrix<T> & Mat){
     #endif
 }
 template<typename T>
-mmatrix<T> mmatrix<T>::distance(mmatrix<T> && Mat, unsigned Norm){
-    return distance(Mat, Norm);
+mmatrix<T> mmatrix<T>::distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, unsigned Norm){
+    return distance(Mat1, Mat2, Norm);
 }
 template<typename T>
-mmatrix<T> mmatrix<T>::distance(mmatrix<T> & Mat, unsigned Norm){
+mmatrix<T> mmatrix<T>::distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, unsigned Norm){
 
 }
 template<typename T>
-mmatrix<T> mmatrix<T>::distance(mmatrix<T> && Mat, std::function<T(mmatrix<T>)> const& Norm){
-    return distance(Mat, Norm);
+mmatrix<T> mmatrix<T>::distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, std::function<T(mmatrix<T>)> const& Norm){
+    return distance(Mat1, Mat2, Norm);
 }
 template<typename T>
-mmatrix<T> mmatrix<T>::distance(mmatrix<T> & Mat, std::function<T(mmatrix<T>)> const& Norm){
+mmatrix<T> mmatrix<T>::distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::function<T(mmatrix<T>)> const& Norm){
 
 }
 
@@ -1234,7 +1294,7 @@ std::vector< meigen<T> > mmatrix<T>::eigen(mmatrix<T> & Mat, unsigned VecNo){
     mmatrix<T> EigenMat = Mat;
     
     if(VecNo > EigenMat.row_size()){
-        throw std::out_of_range("Matrix dimension is "+ Mat._Dimensions.to_string()
+        throw std::out_of_range("eigen: Matrix dimension is "+ Mat._Dimensions.to_string()
             + ", therefore number of "+ std::to_string(VecNo)+" eigen vectors is to high.");
     }
 
@@ -1267,7 +1327,7 @@ T mmatrix<T>::vector_norm(mmatrix<T> & Vector, std::function<T(mmatrix<T>)> cons
 template<typename T>
 T mmatrix<T>::l_p_norm(mmatrix<T> & Matrix, unsigned Norm){
     if(Matrix.row_size() != 1 && Matrix.col_size() != 1){
-        throw std::out_of_range("Matrix not in vector format; either row or column dimension must be one.");
+        throw std::out_of_range("l_p_norm: Matrix not in vector format; either row or column dimension must be one.");
     }
     if(Matrix.row_size() == 1){
         T UnSqr =  std::accumulate(Matrix.begin()->begin(),Matrix.begin()->end(), T(), [&Norm](T & SumPart, T & Element){
@@ -1291,11 +1351,62 @@ template<typename T>
 T mmatrix<T>::taxicap_Norm(mmatrix<T>  Matrix){
     return l_p_norm(Matrix, 1);    
 }
-
 template<typename T>
 const std::function<T(mmatrix<T>)> mmatrix<T>::euclid = &mmatrix<T>::eucl_norm;
 template<typename T>
 const std::function<T(mmatrix<T>)> mmatrix<T>::taxicap = &mmatrix<T>::taxicap_norm;
+
+
+template<typename T>
+mmatrix<T> mmatrix<T>::vector_norms(mmatrix<T> && Matrix, unsigned Norm){
+    return vector_norms(Matrix);
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::vector_norms(mmatrix<T> & Matrix, unsigned Norm){
+    return l_p_norms(Matrix,Norm);
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::vector_norms(mmatrix<T> && Matrix, std::function<mmatrix<T>(mmatrix<T>)> const& Norm){
+    return vector_norms(Matrix, Norm);
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::vector_norms(mmatrix<T> & Matrix, std::function<mmatrix<T>(mmatrix<T>)> const& Norm){
+    return Norm(Matrix);
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::l_p_norms(mmatrix<T> & Matrix, unsigned Norm){
+    mmatrix<T> Norms(1,Matrix.row_size());
+    T * NormVec = &Norms.begin()->front();
+    std::vector<T> * MVec = &Matrix.front();
+    #ifdef _OPENMP
+    #pragma omp parallel
+    {
+        #pragma omp for
+    #endif
+        for(int i = 0; i < Matrix.row_size(); i++){
+            T UnSqr =  std::accumulate(MVec[i].begin(),MVec[i].end(), T(), [&Norm](T & SumPart, T & Element){
+                return SumPart + std::pow(Element,Norm);
+            });
+            NormVec[i] = std::pow(UnSqr, 1.0/(double)Norm);
+        }
+    #ifdef _OPENMP
+    }
+    #endif
+    return Norms;
+}
+//TODO: solution to use reference of Matrix
+template<typename T>
+mmatrix<T> mmatrix<T>::eucl_norms(mmatrix<T>  Matrix){
+    return l_p_norms(Matrix, 2);
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::taxicap_norms(mmatrix<T>  Matrix){
+    return l_p_norms(Matrix, 1);    
+}
+template<typename T>
+const std::function<mmatrix<T>(mmatrix<T>)> mmatrix<T>::euclids = &mmatrix<T>::eucl_norms;
+template<typename T>
+const std::function<mmatrix<T>(mmatrix<T>)> mmatrix<T>::taxicaps = &mmatrix<T>::taxicap_norms;
 
 
 template<typename T>
@@ -1305,12 +1416,12 @@ mdimension mmatrix<T>::check_length_input(const std::vector< std::vector<T> > & 
         MatDim = mdimension(Mat.size(),Mat.begin()->size());
         for(auto iter = Mat.begin(); iter < Mat.end(); iter++){
             if(iter->size() != MatDim.Col){
-                throw std::out_of_range("Column dimensions of submitted vector matrix are not conforming.");
+                throw std::out_of_range("check_length_input: Column dimensions of submitted vector matrix are not conforming.");
             }
         }
     }
     else{
-        throw std::out_of_range("Empty matrix submitted.");
+        throw std::out_of_range("check_length_input: Empty matrix submitted.");
     }
     return MatDim;
 }
@@ -1322,12 +1433,12 @@ mdimension mmatrix<T>::check_length_input(const std::initializer_list< std::init
         MatDim = mdimension(Mat.size(),Mat.begin()->size());
         for(auto iter = Mat.begin(); iter < Mat.end(); iter++){
             if(iter->size() != MatDim.Col){
-                throw std::out_of_range("Column dimensions of submitted vector matrix are not conforming.");
+                throw std::out_of_range("check_length_input: Column dimensions of submitted vector matrix are not conforming.");
             }
         }
     }
     else{
-        throw std::out_of_range("Empty matrix submitted.");
+        throw std::out_of_range("check_length_input: Empty matrix submitted.");
     }
     return MatDim;
 }

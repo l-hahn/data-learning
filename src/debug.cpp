@@ -43,14 +43,14 @@ void debug_pca(){
     
     data_learning::mining::pca<double> PCA = data_learning::mining::pca<double>(DataMat);
 
-    std::ofstream Output("test-data/EigenSpectum.dat"); 
+    std::ofstream Output("test-data/EigenSpectum_PCA.dat"); 
     EigSpec = PCA.eigen_spectrum();
     for(unsigned i = 0; i < EigSpec.col_size(); i++){
         Output << EigSpec[0][i] << std::endl;
     }
     Output.close();
 
-    Output = std::ofstream("test-data/PrincipleComponents.dat");
+    Output = std::ofstream("test-data/PrincipleComponents_PCA.dat");
     PrinComp = PCA.principle_components();
     for(unsigned i = 0; i < PrinComp.row_size(); i++){
         for(unsigned j = 0; j < PrinComp.col_size()-1; j++){
@@ -60,7 +60,7 @@ void debug_pca(){
     }
     Output.close();
 
-    Output = std::ofstream("test-data/Loadings.dat");
+    Output = std::ofstream("test-data/Loadings_PCA.dat");
     EigenVectors = PCA.loadings();
     for(unsigned i = 0; i < EigenVectors.row_size(); i++){
         for(unsigned j = 0; j < EigenVectors.col_size()-1; j++){
@@ -72,7 +72,7 @@ void debug_pca(){
 }
 
 void debug_mds(){
-    mmatrix<double> DataMat;
+    mmatrix<double> DataMat, X,Y;
     std::vector<double> data;
     std::string Line;
     
@@ -85,6 +85,12 @@ void debug_mds(){
         }
     }
     Input.close();
+
+    X = {1,2,3};
+    Y = {3,3,3};
+
+    std::cout << mmatrix<double>::euclid(X-Y) << std::endl;
+
 
 }
 
