@@ -72,10 +72,12 @@ void debug_pca(){
 }
 
 void debug_mds(){
-    mmatrix<double> DataMat, X,Y;
+    mmatrix<double> DataMat, EigSpec, PrinComp;
     std::vector<double> data;
     std::string Line;
     
+    mmatrix<double>::thread(4);
+
     std::ifstream Input("test-data/Hidden2.dat");
     while(!Input.eof()){
         std::getline(Input,Line);
@@ -86,12 +88,24 @@ void debug_mds(){
     }
     Input.close();
 
-    X = {1,2,3};
-    Y = {3,3,3};
+    data_learning::mining::mds<double> MDS = data_learning::mining::mds<double>(DataMat);
 
-    std::cout << mmatrix<double>::euclid(X-Y) << std::endl;
+    std::ofstream Output("test-data/EigenSpectum_MDS.dat"); 
+    EigSpec = MDS.eigen_spectrum(2);
+    for(unsigned i = 0; i < EigSpec.col_size(); i++){
+        Output << EigSpec[0][i] << std::endl;
+    }
+    Output.close();
 
-
+    Output = std::ofstream("test-data/PrincipleComponents_MDS.dat");
+    PrinComp = MDS.principle_components(2);
+    for(unsigned i = 0; i < PrinComp.row_size(); i++){
+        for(unsigned j = 0; j < PrinComp.col_size()-1; j++){
+            Output << PrinComp[i][j] << "\t";
+        }
+        Output << PrinComp[i][PrinComp.col_size()-1] << std::endl;
+    }
+    Output.close();
 }
 
 void split(const std::string &s, char delim, std::vector<double> &elems){
