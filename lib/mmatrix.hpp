@@ -13,7 +13,8 @@
 #include <vector>
 
 #include "mdimension.hpp"
-#include "meigen.hpp"
+#include "meigen.hpp" 
+
 
 template<typename T = double>
 class mmatrix{
@@ -127,6 +128,14 @@ class mmatrix{
 
         static mmatrix<T> covariance(mmatrix<T> && Mat);
         static mmatrix<T> covariance(mmatrix<T> & Mat);
+        static mmatrix<T> reduced_covariance(mmatrix<T> && Mat, std::vector< meigen<T> > && Eigens);
+        static mmatrix<T> reduced_covariance(mmatrix<T> & Mat, std::vector< meigen<T> > & Eigens);
+        static mmatrix<T> gramian(mmatrix<T> && Mat);
+        static mmatrix<T> gramian(mmatrix<T> & Mat);
+        static mmatrix<T> distance(mmatrix<T> && Mat, unsigned Norm = 2);
+        static mmatrix<T> distance(mmatrix<T> & Mat, unsigned Norm = 2);
+        static mmatrix<T> distance(mmatrix<T> && Mat, std::function<T(mmatrix<T>)> const& Norm);
+        static mmatrix<T> distance(mmatrix<T> & Mat, std::function<T(mmatrix<T>)> const& Norm);
         static std::vector< meigen<T> > eigen(mmatrix<T> && Mat, unsigned VecNo = 0);
         static std::vector< meigen<T> > eigen(mmatrix<T> & Mat, unsigned VecNo = 0);
 
@@ -1064,15 +1073,30 @@ mmatrix<T> mmatrix<T>::covariance(mmatrix<T> & Mat){
     T * MeanCol = &MeanVec.front();
 
     for(unsigned int i = 0; i < Mat._Matrix.size(); i++){
-        T * Vals = &Rows[i].front();
-        for(unsigned int j = 0; j < Mat._Dimensions.Col; j++){
-            MeanCol[j] += Vals[j];
+        #ifdef _OPENMP
+        #pragma omp parallel
+        {
+            T * Vals = &Rows[i].front();
+            #pragma omp for
+        #endif
+            for(unsigned int j = 0; j < Mat._Dimensions.Col; j++){
+                MeanCol[j] += Vals[j];
+            }
+        #ifdef _OPENMP    
         }
+        #endif
     }
-
-    for(unsigned int i = 0; i < Mat._Dimensions.Col; i++){
-        MeanCol[i] /= Mat._Dimensions.Row;
+    #ifdef _OPENMP
+    #pragma omp parallel
+    {
+        #pragma omp for
+    #endif
+        for(unsigned int i = 0; i < Mat._Dimensions.Col; i++){
+            MeanCol[i] /= Mat._Dimensions.Row;
+        }
+    #ifdef _OPENMP
     }
+    #endif
 
     CovMat -= MeanVec;
     if(Mat._Dimensions.Row > 1){
@@ -1082,6 +1106,118 @@ mmatrix<T> mmatrix<T>::covariance(mmatrix<T> & Mat){
         CovMat = CovMat.transposition()*CovMat/Mat._Dimensions.Row;
     }
     return CovMat;
+}
+template<typename T>
+mmatrix<T>  mmatrix<T>::reduced_covariance(mmatrix<T> && Mat, std::vector< meigen<T> > && Eigens){
+    return reduced_covariance(Mat, Eigens);
+}
+template<typename T>
+mmatrix<T>  mmatrix<T>::reduced_covariance(mmatrix<T> & Mat, std::vector< meigen<T> > & Eigens){
+    mmatrix<T> CovMat = Mat;
+    for(meigen<T> Eigen : Eigens){
+        Mat -= Eigen.vector().transposition()*Eigen.vector()*Eigen.value();
+    }
+    return CovMat;
+}
+
+template<typename T>
+mmatrix<T> gramian(mmatrix<T> && Mat){ 
+    gramian(Mat);
+}
+template<typename T>
+mmatrix<T> gramian(mmatrix<T> & Mat){
+    if(Mat.row_size() != Mat.col_size()){
+        throw std::out_of_range("Matrix has to be square matix, but it is "+Mat.size().to_string()+".");
+    }
+    mmatrix<T> GramianMat = Mat.entry_mult(Mat);
+    std::vector<T> RowMean(GramianMat.row_size(),T()), ColMean(GramianMat.col_size(),T());
+    
+    T * RMean = &RowMean.front();
+    T * CMean = &ColMean.front();
+
+    std::vector<T> * GMat = &GramianMat.front();
+
+    #ifdef _OPENMP
+    #pragma omp parallel
+    {
+        #pragma omp for
+    #endif
+        for(unsigned i = 0; i < GramianMat.row_size(); i++){
+            T * GVec = &GMat[i].front();
+            for(unsigned j = 0; j < GramianMat.col_size(); j++){
+                RMean[i] += GVec[j];      
+            }
+        }
+    #ifdef _OPENMP
+    }
+    #endif
+
+    for(unsigned i = 0; i < GramianMat.row_size(); i++){
+        #ifdef _OPENMP
+        #pragma omp parallel
+        {
+            T * GVec = &GMat[i].front();
+            #pragma omp for
+        #endif
+            for(unsigned j = 0; j < GramianMat.col_size(); j++){
+                CMean[j] += GVec[j];       
+            }
+        #ifdef _OPENMP
+        }
+        #endif
+    }
+
+
+    T TotalMean = T();
+    for(unsigned i = 0; i < RowMean.size(); i++){
+        TotalMean += RowMean[i];
+    }
+
+    #ifdef _OPENMP
+    #pragma omp parallel
+    {
+        #pragma omp for
+    #endif
+        for(unsigned i = 0; i < RowMean.size(); i++){
+            RMean[i] /= RowMean.size();
+            CMean[i] /= RowMean.size();
+        }
+    #ifdef _OPENMP
+    }
+    #endif
+    TotalMean /= GramianMat.row_size()*GramianMat.row_size();
+
+
+    #ifdef _OPENMP
+    #pragma omp parallel
+    {
+        #pragma omp for
+    #endif
+        for(unsigned i = 0; i < GramianMat.row_size(); i++){
+            T * GVec = &GMat[i].front();
+            for(unsigned j = 0; j < GramianMat.col_size(); j++){
+                GVec[j] = -0.5*(GVec[j] -RMean[i] - CMean[j] -TotalMean);
+            }
+        }
+    #ifdef _OPENMP
+    }
+    #endif
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::distance(mmatrix<T> && Mat, unsigned Norm){
+    return distance(Mat, Norm);
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::distance(mmatrix<T> & Mat, unsigned Norm){
+
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::distance(mmatrix<T> && Mat, std::function<T(mmatrix<T>)> const& Norm){
+    return distance(Mat, Norm);
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::distance(mmatrix<T> & Mat, std::function<T(mmatrix<T>)> const& Norm){
+
 }
 
 template<typename T>
@@ -1097,9 +1233,14 @@ std::vector< meigen<T> > mmatrix<T>::eigen(mmatrix<T> & Mat, unsigned VecNo){
     std::vector< meigen<T> > Eigens =  std::vector< meigen<T> >(VecNo);
     mmatrix<T> EigenMat = Mat;
     
+    if(VecNo > EigenMat.row_size()){
+        throw std::out_of_range("Matrix dimension is "+ Mat._Dimensions.to_string()
+            + ", therefore number of "+ std::to_string(VecNo)+" eigen vectors is to high.");
+    }
+
     for(unsigned i = 0; i < VecNo; i++){
         Eigens[i] = meigen<T>::power_iteration(EigenMat);
-        EigenMat = EigenMat - Eigens[i].vector().transposition()*Eigens[i].vector()*Eigens[i].value();
+        EigenMat -= Eigens[i].vector().transposition()*Eigens[i].vector()*Eigens[i].value();
     }
 
     return Eigens;

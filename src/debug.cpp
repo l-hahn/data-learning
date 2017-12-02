@@ -10,21 +10,26 @@
 #include "../lib/learning.hpp"
 #include "../lib/clustering.hpp"
 
+void debug_pca();
+void debug_mds();
+
+
 void split(const std::string &s, char delim, std::vector<double> &elems);
 std::vector<double> split(const std::string &s, char delim);
 
 int main(){
+    //debug_pca();
+    debug_mds();
+
+    return 0;
+}
+
+/*---Auxilliary---------------------------------------------------------------*/
+
+void debug_pca(){
     mmatrix<double> DataMat, EigSpec, PrinComp, EigenVectors;
     std::vector<double> data;
     std::string Line;
-
-    //mmatrix<double>::thread(3);
-
-    DataMat.resize(1000);
-    DataMat = DataMat * DataMat.transposition();
-    std::cout << DataMat.size().to_string() << std::endl;
-
-    return 0;
 
     std::ifstream Input("test-data/Hidden2.dat");
     while(!Input.eof()){
@@ -36,9 +41,9 @@ int main(){
     }
     Input.close();
     
-    std::ofstream Output("test-data/EigenSpectum.dat"); 
     data_learning::mining::pca<double> PCA = data_learning::mining::pca<double>(DataMat);
-    std::cout << PCA.cov_matrix().to_string() << std::endl;
+
+    std::ofstream Output("test-data/EigenSpectum.dat"); 
     EigSpec = PCA.eigen_spectrum();
     for(unsigned i = 0; i < EigSpec.col_size(); i++){
         Output << EigSpec[0][i] << std::endl;
@@ -64,8 +69,23 @@ int main(){
         Output << EigenVectors[i][EigenVectors.col_size()-1] << std::endl;
     }
     Output.close();
+}
 
-    return 0;
+void debug_mds(){
+    mmatrix<double> DataMat;
+    std::vector<double> data;
+    std::string Line;
+    
+    std::ifstream Input("test-data/Hidden2.dat");
+    while(!Input.eof()){
+        std::getline(Input,Line);
+        data = split(Line, ' ');
+        if(data.size() != 0){
+            DataMat.push_back(data);
+        }
+    }
+    Input.close();
+
 }
 
 void split(const std::string &s, char delim, std::vector<double> &elems){
