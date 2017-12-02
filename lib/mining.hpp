@@ -4,8 +4,6 @@
 #include <cmath>
 #include <vector>
 
-#include <fstream>
-
 #include "mmatrix.hpp"
 #include "meigen.hpp"
 
@@ -24,13 +22,11 @@ namespace data_learning{
                 pca(mmatrix<T> && Mat);
                 pca(mmatrix<T> & Mat);
 
+                void data_matrix(mmatrix<T> && Mat);
+                void data_matrix(mmatrix<T> & Mat);
 
-                void set_matrix(mmatrix<T> && Mat);
-                void set_matrix(mmatrix<T> & Mat);
-
-
-                mmatrix<T> cov_matrix();
                 mmatrix<T> data_matrix();
+                mmatrix<T> cov_matrix();
                 std::vector< meigen<T> > eigen(unsigned EigNumber = 0, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
 
                 mmatrix<T> eigen_spectrum(unsigned EigNumber = 0, bool normalise = true, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
@@ -48,34 +44,34 @@ namespace data_learning{
         }
         template<typename T>
         pca<T>::pca(mmatrix<T> && Mat){
-            set_matrix(Mat);
+            data_matrix(Mat);
         }
         template<typename T>
         pca<T>::pca(mmatrix<T> & Mat){
-            set_matrix(Mat);
+            data_matrix(Mat);
         }
 
         template<typename T>
-        void pca<T>::set_matrix(mmatrix<T> && Mat){
-            set_matrix(Mat);
+        void pca<T>::data_matrix(mmatrix<T> && Mat){
+            data_matrix(Mat);
         }
         template<typename T>
-        void pca<T>::set_matrix(mmatrix<T> & Mat){
+        void pca<T>::data_matrix(mmatrix<T> & Mat){
             _Eigens.clear();
             _CovMatrix.clear();
             _DataMatrix = Mat;
         }
 
         template<typename T>
+        mmatrix<T> pca<T>::data_matrix(){
+            return _DataMatrix;
+        }
+        template<typename T>
         mmatrix<T> pca<T>::cov_matrix(){
             if(_CovMatrix.size().Row == 0 || _CovMatrix.size().Col == 0){
                 _CovMatrix = mmatrix<T>::covariance(_DataMatrix);
             }
             return _CovMatrix;
-        }
-        template<typename T>
-        mmatrix<T> pca<T>::data_matrix(){
-            return _DataMatrix;
         }
         template<typename T>
         std::vector< meigen<T> > pca<T>::eigen(unsigned EigNumber, std::function<T(mmatrix<T>)> const& Norm){
@@ -167,11 +163,14 @@ namespace data_learning{
                 mds(mmatrix<T> && Mat);
                 mds(mmatrix<T> & Mat);
 
-                void set_matrix(mmatrix<T> && Mat, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
-                void set_matrix(mmatrix<T> & Mat, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
+                void dist_matrix(mmatrix<T> && Mat);
+                void dist_matrix(mmatrix<T> & Mat);
 
-                mmatrix<T> gramian_matrix();
+                void data_matrix(mmatrix<T> && Mat, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
+                void data_matrix(mmatrix<T> & Mat, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
+
                 mmatrix<T> dist_matrix();
+                mmatrix<T> gramian_matrix();
                 std::vector< meigen<T> > eigen(unsigned EigNumber = 0, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
 
                 mmatrix<T> eigen_spectrum(unsigned EigNumber = 0, bool normalise = true, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
@@ -189,19 +188,32 @@ namespace data_learning{
         }
         template<typename T>
         mds<T>::mds(mmatrix<T> && Mat){
-            set_matrix(Mat);
+            data_matrix(Mat);
         }
         template<typename T>
         mds<T>::mds(mmatrix<T> & Mat){
-            set_matrix(Mat);
+            data_matrix(Mat);
         }
 
         template<typename T>
-        void mds<T>::set_matrix(mmatrix<T> && Mat, std::function<T(mmatrix<T>)> const& Norm){
-            set_matrix(Mat,Norm);
+        void mds<T>::dist_matrix(mmatrix<T> && Mat){
+            _Eigens.clear();
+            _GramianMatrix.clear();
+            _DistMatrix = Mat;
         }
         template<typename T>
-        void mds<T>::set_matrix(mmatrix<T> & Mat, std::function<T(mmatrix<T>)> const& Norm){
+        void mds<T>::dist_matrix(mmatrix<T> & Mat){
+            _Eigens.clear();
+            _GramianMatrix.clear();
+            _DistMatrix = Mat;
+        }
+
+        template<typename T>
+        void mds<T>::data_matrix(mmatrix<T> && Mat, std::function<T(mmatrix<T>)> const& Norm){
+            data_matrix(Mat,Norm);
+        }
+        template<typename T>
+        void mds<T>::data_matrix(mmatrix<T> & Mat, std::function<T(mmatrix<T>)> const& Norm){
             _Eigens.clear();
             _GramianMatrix.clear();
             _DistMatrix = mmatrix<T>::distance(Mat,Mat,Norm);
@@ -211,15 +223,15 @@ namespace data_learning{
         }
 
         template<typename T>
+        mmatrix<T> mds<T>::dist_matrix(){
+            return _DistMatrix;
+        }
+        template<typename T>
         mmatrix<T> mds<T>::gramian_matrix(){
             if(_GramianMatrix.size().Row == 0 || _GramianMatrix.size().Col == 0){
                 _GramianMatrix = mmatrix<T>::gramian(_DistMatrix);
             }
             return _GramianMatrix;
-        }
-        template<typename T>
-        mmatrix<T> mds<T>::dist_matrix(){
-            return _DistMatrix;
         }
         template<typename T>
         std::vector< meigen<T> > mds<T>::eigen(unsigned EigNumber, std::function<T(mmatrix<T>)> const& Norm){

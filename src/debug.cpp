@@ -19,7 +19,7 @@ std::vector<double> split(const std::string &s, char delim);
 
 int main(){
     //debug_pca();
-    debug_mds();
+    //debug_mds();
 
     return 0;
 }
