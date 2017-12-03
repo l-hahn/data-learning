@@ -126,12 +126,18 @@ class mmatrix{
         iterator begin();
         iterator end();
 
+
         static mmatrix<T> repmat(mmatrix<T> && Mat, unsigned Row = 1, unsigned Col = 1);
         static mmatrix<T> repmat(mmatrix<T> & Mat, unsigned Row = 1, unsigned Col = 1);
         static void transform(mmatrix<T> && Mat, std::function<T(T)> const& func);
         static void transform(mmatrix<T> & Mat, std::function<T(T)> const& func);
         static void transform(mmatrix<T> && Mat, std::function<T(mmatrix<T>)> const& func);
         static void transform(mmatrix<T> & Mat, std::function<T(mmatrix<T>)> const& func);
+
+        static mmatrix<T> max(mmatrix<T> && Mat);
+        static mmatrix<T> max(mmatrix<T> & Mat);
+        static mmatrix<T> min(mmatrix<T> && Mat);
+        static mmatrix<T> min(mmatrix<T> & Mat);
 
         static mmatrix<T> covariance(mmatrix<T> && Mat);
         static mmatrix<T> covariance(mmatrix<T> & Mat);
@@ -150,16 +156,16 @@ class mmatrix{
 
         static T vector_norm(mmatrix<T> && Vector, unsigned Norm = 2);
         static T vector_norm(mmatrix<T> & Vector, unsigned Norm = 2);
-        static T vector_norm(mmatrix<T> && Vector, std::function<T(mmatrix<T>)> const& Norm = euclid);
-        static T vector_norm(mmatrix<T> & Vector, std::function<T(mmatrix<T>)> const& Norm = euclid);
+        static T vector_norm(mmatrix<T> && Vector, std::function<T(mmatrix<T>)> const& Norm);
+        static T vector_norm(mmatrix<T> & Vector, std::function<T(mmatrix<T>)> const& Norm);
 
         static const std::function<T(mmatrix<T>)> euclid;
         static const std::function<T(mmatrix<T>)> taxicap;
 
         static mmatrix<T> vector_norms(mmatrix<T> && Matrix, unsigned Norm = 2);
         static mmatrix<T> vector_norms(mmatrix<T> & Matrix, unsigned Norm = 2);
-        static mmatrix<T> vector_norms(mmatrix<T> && Matrix, std::function<mmatrix<T>(mmatrix<T>)> const& Norm = euclid);
-        static mmatrix<T> vector_norms(mmatrix<T> & Matrix, std::function<mmatrix<T>(mmatrix<T>)> const& Norm = euclid);
+        static mmatrix<T> vector_norms(mmatrix<T> && Matrix, std::function<mmatrix<T>(mmatrix<T>)> const& Norm);
+        static mmatrix<T> vector_norms(mmatrix<T> & Matrix, std::function<mmatrix<T>(mmatrix<T>)> const& Norm);
 
         static const std::function<mmatrix<T>(mmatrix<T>)> euclids;
         static const std::function<mmatrix<T>(mmatrix<T>)> taxicaps;
@@ -476,24 +482,7 @@ mmatrix<T>& mmatrix<T>::operator+=(std::vector<T> & Mat){
         throw std::out_of_range("operator+=: Matrix dimensions "+ _Dimensions.to_string()
             + " and [" + std::to_string(Mat.size()) + "x1] are not conforming.");
     }
-    mmatrix<T> NewMat(_Dimensions.Row,Mat.size());
-    std::vector<T> * RowsL = &NewMat._Matrix.front();
-    T * ValsR = &Mat.front();
-    #ifdef _OPENMP
-    #pragma omp parallel
-    {
-        #pragma omp for
-    #endif
-        for(std::size_t i = 0; i < _Dimensions.Row; i++){
-            T * ValsL = &RowsL[i].front();
-            for(std::size_t j = 0; j < Mat.size(); j++){
-                ValsL[j] = ValsR[j];
-            }
-        }
-    #ifdef _OPENMP
-    }
-    #endif
-    return operator+=(NewMat);
+    return operator+=(repmat(mmatrix<T>(Mat),_Dimensions.Row,1));
 }
 template<typename T>
 mmatrix<T>& mmatrix<T>::operator-=(std::vector<T> & Mat){
@@ -501,24 +490,7 @@ mmatrix<T>& mmatrix<T>::operator-=(std::vector<T> & Mat){
         throw std::out_of_range("operator-=: Matrix dimensions "+ _Dimensions.to_string()
             + " and [" + std::to_string(Mat.size()) + "x1] are not conforming.");
     }
-    mmatrix<T> NewMat(_Dimensions.Row,Mat.size());
-    std::vector<T> * RowsL = &NewMat._Matrix.front();
-    T * ValsR = &Mat.front();
-    #ifdef _OPENMP
-    #pragma omp parallel
-    {
-        #pragma omp for
-    #endif
-        for(std::size_t i = 0; i < _Dimensions.Row; i++){
-            T * ValsL = &RowsL[i].front();
-            for(std::size_t j = 0; j < Mat.size(); j++){
-                ValsL[j] = ValsR[j];
-            }
-        }
-    #ifdef _OPENMP
-    }
-    #endif
-    return operator-=(NewMat);
+    return operator-=(repmat(mmatrix<T>(Mat),_Dimensions.Row,1));
 }
 template<typename T>
 mmatrix<T>& mmatrix<T>::operator+=(const T Val){
@@ -633,45 +605,19 @@ mmatrix<T> mmatrix<T>::operator-(std::vector<T> && Mat){
 }
 template<typename T>
 mmatrix<T> mmatrix<T>::operator+(std::vector<T> & Mat){
-    mmatrix<T> NewMat(_Dimensions.Row,Mat.size());
-    std::vector<T> * RowsL = &NewMat._Matrix.front();
-    T * ValsR = &Mat.front();
-    #ifdef _OPENMP
-    #pragma omp parallel
-    {
-        #pragma omp for
-    #endif
-    for(std::size_t i = 0; i < _Dimensions.Row; i++){
-        T * ValsL = &RowsL[i].front();
-        for(std::size_t j = 0; j < Mat.size(); j++){
-            ValsL[j] = ValsR[j];
-        }
+    if((_Dimensions.Col - Mat.size()) != 0){
+        throw std::out_of_range("operator+=: Matrix dimensions "+ _Dimensions.to_string()
+            + " and [" + std::to_string(Mat.size()) + "x1] are not conforming.");
     }
-    #ifdef _OPENMP
-    }
-    #endif
-    return operator+(NewMat);
+    return operator+(repmat(mmatrix<T>(Mat),_Dimensions.Row,1));
 }
 template<typename T>
 mmatrix<T> mmatrix<T>::operator-(std::vector<T> & Mat){
-    mmatrix<T> NewMat(_Dimensions.Row,Mat.size());
-    std::vector<T> * RowsL = &NewMat._Matrix.front();
-    T * ValsR = &Mat.front();
-    #ifdef _OPENMP
-    #pragma omp parallel
-    {
-        #pragma omp for
-    #endif
-    for(std::size_t i = 0; i < _Dimensions.Row; i++){
-        T * ValsL = &RowsL[i].front();
-        for(std::size_t j = 0; j < Mat.size(); j++){
-            ValsL[j] = ValsR[j];
-        }
+    if((_Dimensions.Col - Mat.size()) != 0){
+        throw std::out_of_range("operator+=: Matrix dimensions "+ _Dimensions.to_string()
+            + " and [" + std::to_string(Mat.size()) + "x1] are not conforming.");
     }
-    #ifdef _OPENMP
-    }
-    #endif
-    return operator-(NewMat);
+    return operator-(repmat(mmatrix<T>(Mat),_Dimensions.Row,1));
 }
 template<typename T>
 mmatrix<T> mmatrix<T>::operator+(const T Val){
@@ -1139,6 +1085,47 @@ void mmatrix<T>::transform(mmatrix<T> & Mat, std::function<T(T)> const& func){
             func(Mat[i][j]);
         }
     }
+}
+
+template<typename T>
+mmatrix<T> mmatrix<T>::max(mmatrix<T> && Mat){
+    return max(Mat);
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::max(mmatrix<T> & Mat){
+    matrix<T> Max(Mat.row_size(),1);
+    #ifdef _OPENMP
+    #pragma omp parallel
+    {
+        #pragma omp for
+    #endif
+        for(unsigned i = 0; i < Mat.row_size(); i++){
+            Max[i][0] = *std::max(Mat[i].begin(),Mat[i].end());
+        }
+    #ifdef _OPENMP
+    }
+    #endif
+    return Max;
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::min(mmatrix<T> && Mat){
+    return min(Mat);
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::min(mmatrix<T> & Mat){
+    matrix<T> Min(Mat.row_size(),1);
+    #ifdef _OPENMP
+    #pragma omp parallel
+    {
+        #pragma omp for
+    #endif
+        for(unsigned i = 0; i < Mat.row_size(); i++){
+            Max[i][0] = *std::min(Mat[i].begin(),Mat[i].end());
+        }
+    #ifdef _OPENMP
+    }
+    #endif
+    return Min;
 }
 
 template<typename T>

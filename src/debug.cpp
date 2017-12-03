@@ -43,6 +43,8 @@ void debug_pca(){
     
     data_learning::mining::pca<double> PCA = data_learning::mining::pca<double>(DataMat);
 
+    unsigned EigNumb = 2;
+
     std::ofstream Output("test-data/EigenSpectum_PCA.dat"); 
     EigSpec = PCA.eigen_spectrum();
     for(unsigned i = 0; i < EigSpec.col_size(); i++){
@@ -51,7 +53,7 @@ void debug_pca(){
     Output.close();
 
     Output = std::ofstream("test-data/PrincipleComponents_PCA.dat");
-    PrinComp = PCA.principle_components();
+    PrinComp = PCA.principle_components(EigNumb);
     for(unsigned i = 0; i < PrinComp.row_size(); i++){
         for(unsigned j = 0; j < PrinComp.col_size()-1; j++){
             Output << PrinComp[i][j] << "\t";
