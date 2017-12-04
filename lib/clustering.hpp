@@ -116,8 +116,7 @@ namespace data_learning{
         template<typename T>
         double kmeans<T>::cluster(){
             for(unsigned i = 0; i < _DataMatrix.row_size(); i++){
-                
-                Assignment = std::matrix<T>::vector_norms(_Prototypes - _DataMatrix[i], 2).transposition();
+                mmatrix<T> Assignment = mmatrix<T>::vector_norms(_Prototypes - _DataMatrix[i], 2).transposition();
                 _Assignments[i][std::max_element(_Assignments[i].begin(),_Assignments[i].end())-_Assignments[i].begin()] = T();
                 unsigned Idx = std::max_element(Assignment[0].begin(),Assignment[0].end()) - Assignment[0].begin();
                 _Assignments[Idx] = T(1);
@@ -132,7 +131,8 @@ namespace data_learning{
             unsigned Idx = 1;
 
             ReconstError.push_back(cluster());
-
+            T ClsErr;
+            
             do{
                 ClsErr = mmatrix<T>::min(mmatrix<T>::max(_Assignments.transposition()).transposition())[0][0];
                 if(ClsErr == 0){

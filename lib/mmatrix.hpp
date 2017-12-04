@@ -482,7 +482,23 @@ mmatrix<T>& mmatrix<T>::operator+=(std::vector<T> & Mat){
         throw std::out_of_range("operator+=: Matrix dimensions "+ _Dimensions.to_string()
             + " and [" + std::to_string(Mat.size()) + "x1] are not conforming.");
     }
-    return operator+=(repmat(mmatrix<T>(Mat),_Dimensions.Row,1));
+    std::vector<T> * RowsL = &_Matrix.front();
+    T * ValsR = &Mat.front();
+    #ifdef _OPENMP
+    #pragma omp parallel
+    {
+        #pragma omp for
+    #endif
+        for(std::size_t i = 0; i < _Dimensions.Row; i++){
+            T * ValsL = &RowsL[i].front();
+            for(std::size_t j = 0; j < _Dimensions.Col; j++){
+                ValsL[j] += ValsR[j];
+            }
+        }
+    #ifdef _OPENMP
+    }
+    #endif
+    return *this;
 }
 template<typename T>
 mmatrix<T>& mmatrix<T>::operator-=(std::vector<T> & Mat){
@@ -490,7 +506,24 @@ mmatrix<T>& mmatrix<T>::operator-=(std::vector<T> & Mat){
         throw std::out_of_range("operator-=: Matrix dimensions "+ _Dimensions.to_string()
             + " and [" + std::to_string(Mat.size()) + "x1] are not conforming.");
     }
-    return operator-=(repmat(mmatrix<T>(Mat),_Dimensions.Row,1));
+    std::vector<T> * RowsL = &_Matrix.front();
+    T * ValsR = &Mat.front();
+
+    #ifdef _OPENMP
+    #pragma omp parallel
+    {
+        #pragma omp for
+    #endif
+        for(std::size_t i = 0; i < _Dimensions.Row; i++){
+            T * ValsL = &RowsL[i].front();
+            for(std::size_t j = 0; j < _Dimensions.Col; j++){
+                ValsL[j] -= ValsR[j];
+            }
+        }
+    #ifdef _OPENMP
+    }
+    #endif
+    return *this;
 }
 template<typename T>
 mmatrix<T>& mmatrix<T>::operator+=(const T Val){
@@ -545,10 +578,9 @@ mmatrix<T> mmatrix<T>::operator+(mmatrix<T> & Mat){
         throw std::out_of_range("operator+: Matrix dimensions "+ _Dimensions.to_string()
             + Mat._Dimensions.to_string() + " are not conforming.");
     }
-    mmatrix<T> NewMat(_Dimensions);
-    std::vector<T> * RowsL = &_Matrix.front();
+    mmatrix<T> NewMat(*this);
     std::vector<T> * RowsR = &Mat._Matrix.front();
-    std::vector<T> * Rows = &NewMat._Matrix.front();
+    std::vector<T> * RowsL = &NewMat._Matrix.front();
     #ifdef _OPENMP
     #pragma omp parallel
     {
@@ -557,9 +589,8 @@ mmatrix<T> mmatrix<T>::operator+(mmatrix<T> & Mat){
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
             T * ValsR = &RowsR[i].front();
-            T * Vals = &Rows[i].front();
             for(std::size_t j = 0; j < _Dimensions.Col; j++){
-                Vals[j] = ValsL[j] + ValsR[j];
+                ValsL[j] += ValsR[j];
             }
         }
     #ifdef _OPENMP
@@ -573,10 +604,9 @@ mmatrix<T> mmatrix<T>::operator-(mmatrix<T> & Mat){
         throw std::out_of_range("operator-: Matrix dimensions "+ _Dimensions.to_string()
             + Mat._Dimensions.to_string() + " are not conforming.");
     }
-    mmatrix<T> NewMat(_Dimensions);
-    std::vector<T> * RowsL = &_Matrix.front();
+    mmatrix<T> NewMat(*this);
     std::vector<T> * RowsR = &Mat._Matrix.front();
-    std::vector<T> * Rows = &NewMat._Matrix.front();
+    std::vector<T> * RowsL = &NewMat._Matrix.front();
     #ifdef _OPENMP
     #pragma omp parallel
     {
@@ -585,9 +615,8 @@ mmatrix<T> mmatrix<T>::operator-(mmatrix<T> & Mat){
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
             T * ValsR = &RowsR[i].front();
-            T * Vals = &Rows[i].front();
             for(std::size_t j = 0; j < _Dimensions.Col; j++){
-                Vals[j] = ValsL[j] - ValsR[j];
+                ValsL[j] -= ValsR[j];
             }
         }
     #ifdef _OPENMP
@@ -609,21 +638,9 @@ mmatrix<T> mmatrix<T>::operator+(std::vector<T> & Mat){
         throw std::out_of_range("operator+=: Matrix dimensions "+ _Dimensions.to_string()
             + " and [" + std::to_string(Mat.size()) + "x1] are not conforming.");
     }
-    return operator+(repmat(mmatrix<T>(Mat),_Dimensions.Row,1));
-}
-template<typename T>
-mmatrix<T> mmatrix<T>::operator-(std::vector<T> & Mat){
-    if((_Dimensions.Col - Mat.size()) != 0){
-        throw std::out_of_range("operator+=: Matrix dimensions "+ _Dimensions.to_string()
-            + " and [" + std::to_string(Mat.size()) + "x1] are not conforming.");
-    }
-    return operator-(repmat(mmatrix<T>(Mat),_Dimensions.Row,1));
-}
-template<typename T>
-mmatrix<T> mmatrix<T>::operator+(const T Val){
-    mmatrix<T> NewMat(_Dimensions);
+    mmatrix<T> NewMat = mmatrix<T>(*this);
     std::vector<T> * RowsL = &NewMat._Matrix.front();
-    std::vector<T> * RowsR = &_Matrix.front();
+    T * ValsR = &Mat.front();
     #ifdef _OPENMP
     #pragma omp parallel
     {
@@ -631,9 +648,53 @@ mmatrix<T> mmatrix<T>::operator+(const T Val){
     #endif
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
-            T * ValsR = &RowsR[i].front();
             for(std::size_t j = 0; j < _Dimensions.Col; j++){
-                ValsL[j] = ValsR[j] + Val;
+                ValsL[j] += ValsR[j];
+            }
+        }
+    #ifdef _OPENMP
+    }
+    #endif
+    return NewMat;
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::operator-(std::vector<T> & Mat){
+    if((_Dimensions.Col - Mat.size()) != 0){
+        throw std::out_of_range("operator+=: Matrix dimensions "+ _Dimensions.to_string()
+            + " and [" + std::to_string(Mat.size()) + "x1] are not conforming.");
+    }
+    mmatrix<T> NewMat = mmatrix<T>(*this);
+    std::vector<T> * RowsL = &NewMat._Matrix.front();
+    T * ValsR = &Mat.front();
+    #ifdef _OPENMP
+    #pragma omp parallel
+    {
+        #pragma omp for
+    #endif
+        for(std::size_t i = 0; i < _Dimensions.Row; i++){
+            T * ValsL = &RowsL[i].front();
+            for(std::size_t j = 0; j < _Dimensions.Col; j++){
+                ValsL[j] -= ValsR[j];
+            }
+        }
+    #ifdef _OPENMP
+    }
+    #endif
+    return NewMat;
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::operator+(const T Val){
+    mmatrix<T> NewMat(*this);
+    std::vector<T> * RowsL = &NewMat._Matrix.front();
+    #ifdef _OPENMP
+    #pragma omp parallel
+    {
+        #pragma omp for
+    #endif
+        for(std::size_t i = 0; i < _Dimensions.Row; i++){
+            T * ValsL = &RowsL[i].front();
+            for(std::size_t j = 0; j < _Dimensions.Col; j++){
+                ValsL[j] += Val;
             }
         }
     #ifdef _OPENMP
@@ -643,9 +704,8 @@ mmatrix<T> mmatrix<T>::operator+(const T Val){
 }
 template<typename T>
 mmatrix<T> mmatrix<T>::operator-(const T Val){
-    mmatrix<T> NewMat(_Dimensions);
+    mmatrix<T> NewMat(*this);
     std::vector<T> * RowsL = &NewMat._Matrix.front();
-    std::vector<T> * RowsR = &_Matrix.front();
     #ifdef _OPENMP
     #pragma omp parallel
     {
@@ -653,9 +713,8 @@ mmatrix<T> mmatrix<T>::operator-(const T Val){
     #endif
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
-            T * ValsR = &RowsR[i].front();
             for(std::size_t j = 0; j < _Dimensions.Col; j++){
-                ValsL[j] = ValsR[j] - Val;
+                ValsL[j] -= Val;
             }
         }
     #ifdef _OPENMP
@@ -799,13 +858,12 @@ mmatrix<T> mmatrix<T>::operator*(std::vector<T> & Mat){
     mmatrix<T> NewMat;
     NewMat.push_back(Mat);
     NewMat.transpose();
-    return operator*=(NewMat);
+    return operator*(NewMat);
 }
 template<typename T>
 mmatrix<T> mmatrix<T>::operator*(const T Val){
-    mmatrix<T> NewMat(_Dimensions);
+    mmatrix<T> NewMat(*this);
     std::vector<T> * RowsL = &NewMat._Matrix.front();
-    std::vector<T> * RowsR = &_Matrix.front();
     #ifdef _OPENMP
     #pragma omp parallel
     {
@@ -813,9 +871,8 @@ mmatrix<T> mmatrix<T>::operator*(const T Val){
     #endif
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
-            T * ValsR = &RowsR[i].front();
             for(std::size_t j = 0; j < _Dimensions.Col; j++){
-                ValsL[j] = ValsR[j] * Val;
+                ValsL[j] *= Val;
             }
         }
     #ifdef _OPENMP
@@ -825,9 +882,8 @@ mmatrix<T> mmatrix<T>::operator*(const T Val){
 }
 template<typename T>
 mmatrix<T> mmatrix<T>::operator/(const T Val){
-    mmatrix<T> NewMat(_Dimensions);
+    mmatrix<T> NewMat(*this);
     std::vector<T> * RowsL = &NewMat._Matrix.front();
-    std::vector<T> * RowsR = &_Matrix.front();
     #ifdef _OPENMP
     #pragma omp parallel
     {
@@ -835,9 +891,8 @@ mmatrix<T> mmatrix<T>::operator/(const T Val){
     #endif
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
-            T * ValsR = &RowsR[i].front();
             for(std::size_t j = 0; j < _Dimensions.Col; j++){
-                ValsL[j] = ValsR[j] / Val;
+                ValsL[j] /= Val;
             }
         }
     #ifdef _OPENMP
@@ -929,10 +984,9 @@ mmatrix<T> mmatrix<T>::entry_mult(mmatrix<T> & Mat){
         throw std::out_of_range("entry_mult: Matrix dimensions "+ _Dimensions.to_string()
             + Mat._Dimensions.to_string() + " are not conforming.");
     }
-    mmatrix<T> NewMat(_Dimensions);
-    std::vector<T> * RowsL = &_Matrix.front();
+    mmatrix<T> NewMat(*this);
     std::vector<T> * RowsR = &Mat._Matrix.front();
-    std::vector<T> * Rows = &NewMat._Matrix.front();
+    std::vector<T> * RowsL = &NewMat._Matrix.front();
     #ifdef _OPENMP
     #pragma omp parallel
     {
@@ -941,9 +995,8 @@ mmatrix<T> mmatrix<T>::entry_mult(mmatrix<T> & Mat){
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
             T * ValsR = &RowsR[i].front();
-            T * Vals = &Rows[i].front();
             for(std::size_t j = 0; j < _Dimensions.Col; j++){
-                Vals[j] = ValsL[j] * ValsR[j];
+                ValsL[j] *= ValsR[j];
             }
         }
     #ifdef _OPENMP
@@ -1093,7 +1146,7 @@ mmatrix<T> mmatrix<T>::max(mmatrix<T> && Mat){
 }
 template<typename T>
 mmatrix<T> mmatrix<T>::max(mmatrix<T> & Mat){
-    matrix<T> Max(Mat.row_size(),1);
+    mmatrix<T> Max(Mat.row_size(),1);
     #ifdef _OPENMP
     #pragma omp parallel
     {
@@ -1113,14 +1166,14 @@ mmatrix<T> mmatrix<T>::min(mmatrix<T> && Mat){
 }
 template<typename T>
 mmatrix<T> mmatrix<T>::min(mmatrix<T> & Mat){
-    matrix<T> Min(Mat.row_size(),1);
+    mmatrix<T> Min(Mat.row_size(),1);
     #ifdef _OPENMP
     #pragma omp parallel
     {
         #pragma omp for
     #endif
         for(unsigned i = 0; i < Mat.row_size(); i++){
-            Max[i][0] = *std::min(Mat[i].begin(),Mat[i].end());
+            Min[i][0] = *std::min(Mat[i].begin(),Mat[i].end());
         }
     #ifdef _OPENMP
     }

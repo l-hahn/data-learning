@@ -10,6 +10,7 @@
 #include "../lib/learning.hpp"
 #include "../lib/clustering.hpp"
 
+void debug_matrix();
 void debug_pca();
 void debug_mds();
 
@@ -18,6 +19,7 @@ void split(const std::string &s, char delim, std::vector<double> &elems);
 std::vector<double> split(const std::string &s, char delim);
 
 int main(){
+    //debug_matrix();
     //debug_pca();
     //debug_mds();
 
@@ -25,6 +27,43 @@ int main(){
 }
 
 /*---Auxilliary---------------------------------------------------------------*/
+
+void debug_matrix(){
+    mmatrix<double> Mat1 = {{1,2,3},{4,5,6},{7,8,9}};
+    mmatrix<double> Mat2 = {{0,1,2},{3,4,5},{6,7,8}};
+    mmatrix<double> Vec1 = {10.0,11.0,12.0};
+    std::vector<double> Vec2 = {11.0,12.0,13.0};
+    double factor = 3;
+
+    std::cout << "Matrix 1:\n" << Mat1.to_string() << "\nMatrix2:\n" << Mat2.to_string() << std::endl << std::endl;
+    std::cout << "Vec 1:\n" << Vec1.to_string() << "\nVec2:\n";
+    for(auto Val : Vec2){
+        std::cout << Val << " ";
+    }
+    std::cout << std::endl << std::endl;
+
+    std::cout << "M1+ M2 : \n" << (Mat1+Mat2).to_string() << std::endl << std::endl;
+    Mat1 += Mat2;
+    std::cout << "M1+=M2 : \n" << Mat1.to_string() << std::endl << std::endl;
+    std::cout << "M1- M2 : \n" << (Mat1-Mat2).to_string() << std::endl << std::endl;
+    Mat1 -= Mat2;
+    std::cout << "M1-=M2 : \n" << Mat1.to_string() << std::endl << std::endl;
+
+    std::cout << "M1* M2 : \n" << (Mat1*Mat2).to_string() << std::endl << std::endl;
+    Mat1 *= Mat2;
+    std::cout << "M1* " << factor << "  : \n" << (Mat1*factor).to_string() << std::endl << std::endl;
+    Mat1 *= factor;
+    std::cout << "M1*=" << factor << "  : \n" << Mat1.to_string() << std::endl << std::endl;
+
+    std::cout << "M1* V1': \n" << (Mat1*Vec1.transposition()).to_string() << std::endl << std::endl;
+    std::cout << "M1* V2 : \n" << (Mat1*Vec2).to_string() << std::endl << std::endl;
+    Mat1 *= Vec1.transposition();
+    std::cout << "M1*=V1 : \n" << Mat1.to_string() << std::endl << std::endl; 
+    Mat1.transpose();
+    Mat1 *= Vec2;
+    std::cout << "M1'*=V2 : \n" << Mat1.to_string() << std::endl << std::endl;
+
+}
 
 void debug_pca(){
     mmatrix<double> DataMat, EigSpec, PrinComp, EigenVectors;
