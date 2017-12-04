@@ -11,13 +11,13 @@
 class mdimension{
     public:
         // size(Mat) == _Row x _Col
-        size_t Row;
-        size_t Col;
+        std::size_t Row;
+        std::size_t Col;
 
     public:
         mdimension();
-        mdimension(size_t Size);
-        mdimension(size_t R, size_t C);
+        mdimension(std::size_t Size);
+        mdimension(std::size_t R, std::size_t C);
         mdimension(const mdimension & Dim);
         mdimension(const mdimension && Dim);
 
@@ -41,9 +41,9 @@ class mdimension{
 
 mdimension::mdimension():Row(0),Col(0){
 }
-mdimension::mdimension(size_t Size):Row(Size),Col(Size){
+mdimension::mdimension(std::size_t Size):Row(Size),Col(Size){
 }
-mdimension::mdimension(size_t R, size_t C):Row(R),Col(C){
+mdimension::mdimension(std::size_t R, std::size_t C):Row(R),Col(C){
 }
 mdimension::mdimension(const mdimension & Dim){
     Row = Dim.Row;
@@ -65,7 +65,7 @@ bool mdimension::empty() const{
 }
 
 void mdimension::swap(){
-    size_t Tmp = std::move(Row);
+    std::size_t Tmp = std::move(Row);
     Row = std::move(Col);
     Col = std::move(Tmp);
 }

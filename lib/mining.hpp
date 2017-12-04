@@ -27,16 +27,16 @@ namespace data_learning{
 
                 mmatrix<T> data_matrix();
                 mmatrix<T> cov_matrix();
-                std::vector< meigen<T> > eigen(unsigned EigNumber = 0, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
+                std::vector< meigen<T> > eigen(std::size_t EigNumber = 0, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
 
-                mmatrix<T> eigen_spectrum(unsigned EigNumber = 0, bool normalise = true, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
-                mmatrix<T> loadings(unsigned LoadNumber = 0, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
-                mmatrix<T> loading(unsigned LoadIdx, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
-                mmatrix<T> principle_components(unsigned CompNumber = 0, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
-                mmatrix<T> principle_component(unsigned CompIdx, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
+                mmatrix<T> eigen_spectrum(std::size_t EigNumber = 0, bool normalise = true, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
+                mmatrix<T> loadings(std::size_t LoadNumber = 0, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
+                mmatrix<T> loading(std::size_t LoadIdx, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
+                mmatrix<T> principle_components(std::size_t CompNumber = 0, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
+                mmatrix<T> principle_component(std::size_t CompIdx, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
 
             private:
-                void calc_eigen(unsigned EigNumber, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
+                void calc_eigen(std::size_t EigNumber, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
         };
 
         template<typename T>
@@ -74,7 +74,7 @@ namespace data_learning{
             return _CovMatrix;
         }
         template<typename T>
-        std::vector< meigen<T> > pca<T>::eigen(unsigned EigNumber, std::function<T(mmatrix<T>)> const& Norm){
+        std::vector< meigen<T> > pca<T>::eigen(std::size_t EigNumber, std::function<T(mmatrix<T>)> const& Norm){
             if(_Eigens.size() < EigNumber || EigNumber == 0){
                 calc_eigen(EigNumber, Norm);
             }
@@ -82,13 +82,13 @@ namespace data_learning{
         }
 
         template<typename T>
-        mmatrix<T> pca<T>::eigen_spectrum(unsigned EigNumber, bool normalise, std::function<T(mmatrix<T>)> const& Norm){
+        mmatrix<T> pca<T>::eigen_spectrum(std::size_t EigNumber, bool normalise, std::function<T(mmatrix<T>)> const& Norm){
             if(_Eigens.size() < EigNumber || EigNumber == 0){
                 calc_eigen(EigNumber, Norm);
             }
             mmatrix<T> EigSpec = mmatrix<T>(1,EigNumber);
             T Sum = T();
-            for(unsigned i = 0; i < EigNumber; i++){
+            for(std::size_t i = 0; i < EigNumber; i++){
                 EigSpec[0][i] = _Eigens[i].value();
                 Sum += _Eigens[i].value();
             }
@@ -100,7 +100,7 @@ namespace data_learning{
             return EigSpec;
         }
         template<typename T>
-        mmatrix<T> pca<T>::loadings(unsigned LoadNumber, std::function<T(mmatrix<T>)> const& Norm){
+        mmatrix<T> pca<T>::loadings(std::size_t LoadNumber, std::function<T(mmatrix<T>)> const& Norm){
             if(_Eigens.size() < LoadNumber || LoadNumber == 0){
                 calc_eigen(LoadNumber, Norm);
             }
@@ -111,14 +111,14 @@ namespace data_learning{
             return Loadings;
         }
         template<typename T>
-        mmatrix<T> pca<T>::loading(unsigned LoadIdx, std::function<T(mmatrix<T>)> const& Norm){
+        mmatrix<T> pca<T>::loading(std::size_t LoadIdx, std::function<T(mmatrix<T>)> const& Norm){
             if(_Eigens.size() < LoadIdx){
                 calc_eigen(LoadIdx, Norm);
             }
             return _Eigens[LoadIdx].vector();
         }
         template<typename T>
-        mmatrix<T> pca<T>::principle_components(unsigned CompNumber, std::function<T(mmatrix<T>)> const& Norm){
+        mmatrix<T> pca<T>::principle_components(std::size_t CompNumber, std::function<T(mmatrix<T>)> const& Norm){
             if(_Eigens.size() < CompNumber || CompNumber == 0){
                 calc_eigen(CompNumber, Norm);
             }
@@ -126,7 +126,7 @@ namespace data_learning{
             return PrinComp;
         }
         template<typename T>
-        mmatrix<T> pca<T>::principle_component(unsigned CompIdx, std::function<T(mmatrix<T>)> const& Norm){
+        mmatrix<T> pca<T>::principle_component(std::size_t CompIdx, std::function<T(mmatrix<T>)> const& Norm){
             if(_Eigens.size() < CompIdx){
                 calc_eigen(CompIdx, Norm);
             }
@@ -134,7 +134,7 @@ namespace data_learning{
         }
 
         template<typename T>
-        void pca<T>::calc_eigen(unsigned EigNumber, std::function<T(mmatrix<T>)> const& Norm){
+        void pca<T>::calc_eigen(std::size_t EigNumber, std::function<T(mmatrix<T>)> const& Norm){
             if(_CovMatrix.size().Row == 0 || _CovMatrix.size().Col == 0){
                 _CovMatrix = mmatrix<T>::covariance(_DataMatrix);
             }
@@ -171,16 +171,16 @@ namespace data_learning{
 
                 mmatrix<T> dist_matrix();
                 mmatrix<T> gramian_matrix();
-                std::vector< meigen<T> > eigen(unsigned EigNumber = 0, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
+                std::vector< meigen<T> > eigen(std::size_t EigNumber = 0, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
 
-                mmatrix<T> eigen_spectrum(unsigned EigNumber = 0, bool normalise = true, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
-                mmatrix<T> loadings(unsigned LoadNumber = 0, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
-                mmatrix<T> loading(unsigned LoadIdx, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
-                mmatrix<T> principle_components(unsigned CompNumber = 0, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
-                mmatrix<T> principle_component(unsigned CompIdx, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
+                mmatrix<T> eigen_spectrum(std::size_t EigNumber = 0, bool normalise = true, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
+                mmatrix<T> loadings(std::size_t LoadNumber = 0, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
+                mmatrix<T> loading(std::size_t LoadIdx, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
+                mmatrix<T> principle_components(std::size_t CompNumber = 0, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
+                mmatrix<T> principle_component(std::size_t CompIdx, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
             
             private:
-                void calc_eigen(unsigned EigNumber, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
+                void calc_eigen(std::size_t EigNumber, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
         };
 
         template<typename T>
@@ -234,7 +234,7 @@ namespace data_learning{
             return _GramianMatrix;
         }
         template<typename T>
-        std::vector< meigen<T> > mds<T>::eigen(unsigned EigNumber, std::function<T(mmatrix<T>)> const& Norm){
+        std::vector< meigen<T> > mds<T>::eigen(std::size_t EigNumber, std::function<T(mmatrix<T>)> const& Norm){
             if(_Eigens.size() < EigNumber || EigNumber == 0){
                 calc_eigen(EigNumber, Norm);
             }
@@ -242,13 +242,13 @@ namespace data_learning{
         }
 
         template<typename T>
-        mmatrix<T> mds<T>::eigen_spectrum(unsigned EigNumber, bool normalise, std::function<T(mmatrix<T>)> const& Norm){
+        mmatrix<T> mds<T>::eigen_spectrum(std::size_t EigNumber, bool normalise, std::function<T(mmatrix<T>)> const& Norm){
             if(_Eigens.size() < EigNumber || EigNumber == 0){
                 calc_eigen(EigNumber, Norm);
             }
             mmatrix<T> EigSpec = mmatrix<T>(1,EigNumber);
             T Sum = T();
-            for(unsigned i = 0; i < EigNumber; i++){
+            for(std::size_t i = 0; i < EigNumber; i++){
                 EigSpec[0][i] = _Eigens[i].value();
                 Sum += _Eigens[i].value();
             }
@@ -260,7 +260,7 @@ namespace data_learning{
             return EigSpec;
         }
         template<typename T>
-        mmatrix<T> mds<T>::loadings(unsigned LoadNumber, std::function<T(mmatrix<T>)> const& Norm){
+        mmatrix<T> mds<T>::loadings(std::size_t LoadNumber, std::function<T(mmatrix<T>)> const& Norm){
             if(_Eigens.size() < LoadNumber || LoadNumber == 0){
                 calc_eigen(LoadNumber, Norm);
             }
@@ -271,23 +271,23 @@ namespace data_learning{
             return Loadings;
         }
         template<typename T>
-        mmatrix<T> mds<T>::loading(unsigned LoadIdx, std::function<T(mmatrix<T>)> const& Norm){
+        mmatrix<T> mds<T>::loading(std::size_t LoadIdx, std::function<T(mmatrix<T>)> const& Norm){
             if(_Eigens.size() < LoadIdx){
                 calc_eigen(LoadIdx, Norm);
             }
             return _Eigens[LoadIdx].vector();
         }
         template<typename T>
-        mmatrix<T> mds<T>::principle_components(unsigned CompNumber, std::function<T(mmatrix<T>)> const& Norm){
+        mmatrix<T> mds<T>::principle_components(std::size_t CompNumber, std::function<T(mmatrix<T>)> const& Norm){
             return loadings(CompNumber, Norm).transposition();
         }
         template<typename T>
-        mmatrix<T> mds<T>::principle_component(unsigned CompIdx, std::function<T(mmatrix<T>)> const& Norm){
+        mmatrix<T> mds<T>::principle_component(std::size_t CompIdx, std::function<T(mmatrix<T>)> const& Norm){
             return loading(CompIdx, Norm).transposition();
         }
 
         template<typename T>
-        void mds<T>::calc_eigen(unsigned EigNumber, std::function<T(mmatrix<T>)> const& Norm){
+        void mds<T>::calc_eigen(std::size_t EigNumber, std::function<T(mmatrix<T>)> const& Norm){
             if(_GramianMatrix.size().Row == 0 || _GramianMatrix.size().Col == 0){
                 _GramianMatrix = mmatrix<T>::gramian(_DistMatrix);
                 std::ofstream asdf("gram.dat");

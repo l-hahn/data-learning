@@ -21,7 +21,7 @@ class mmatrix{
     private:
         std::vector< std::vector<T> > _Matrix;
         mdimension _Dimensions;
-        static unsigned threadNumber;
+        static std::size_t threadNumber;
 
     public:
         mmatrix();
@@ -127,8 +127,8 @@ class mmatrix{
         iterator end();
 
 
-        static mmatrix<T> repmat(mmatrix<T> && Mat, unsigned Row = 1, unsigned Col = 1);
-        static mmatrix<T> repmat(mmatrix<T> & Mat, unsigned Row = 1, unsigned Col = 1);
+        static mmatrix<T> repmat(mmatrix<T> && Mat, std::size_t Row = 1, std::size_t Col = 1);
+        static mmatrix<T> repmat(mmatrix<T> & Mat, std::size_t Row = 1, std::size_t Col = 1);
         static void transform(mmatrix<T> && Mat, std::function<T(T)> const& func);
         static void transform(mmatrix<T> & Mat, std::function<T(T)> const& func);
         static void transform(mmatrix<T> && Mat, std::function<T(mmatrix<T>)> const& func);
@@ -139,31 +139,34 @@ class mmatrix{
         static mmatrix<T> min(mmatrix<T> && Mat);
         static mmatrix<T> min(mmatrix<T> & Mat);
 
+        static mmatrix<T> sum(mmatrix<T> && Mat);
+        static mmatrix<T> sum(mmatrix<T> & Mat);
+
         static mmatrix<T> covariance(mmatrix<T> && Mat);
         static mmatrix<T> covariance(mmatrix<T> & Mat);
         static mmatrix<T> reduced_covariance(mmatrix<T> && Mat, std::vector< meigen<T> > && Eigens);
         static mmatrix<T> reduced_covariance(mmatrix<T> & Mat, std::vector< meigen<T> > & Eigens);
         static mmatrix<T> gramian(mmatrix<T> && Mat);
         static mmatrix<T> gramian(mmatrix<T> & Mat);
-        static mmatrix<T> distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, unsigned Norm = 2);
-        static mmatrix<T> distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, unsigned Norm = 2);
+        static mmatrix<T> distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, std::size_t Norm = 2);
+        static mmatrix<T> distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::size_t Norm = 2);
         static mmatrix<T> distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, std::function<T(mmatrix<T>)> const& Norm = euclid);
         static mmatrix<T> distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::function<T(mmatrix<T>)> const& Norm = euclid);
         static mmatrix<T> distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, std::function<mmatrix<T>(mmatrix<T>)> const& Norm = euclids);
         static mmatrix<T> distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::function<mmatrix<T>(mmatrix<T>)> const& Norm = euclids);
-        static std::vector< meigen<T> > eigen(mmatrix<T> && Mat, unsigned VecNo = 0, std::function<T(mmatrix<T>)> const& Norm = euclid);
-        static std::vector< meigen<T> > eigen(mmatrix<T> & Mat, unsigned VecNo = 0, std::function<T(mmatrix<T>)> const& Norm = euclid);
+        static std::vector< meigen<T> > eigen(mmatrix<T> && Mat, std::size_t VecNo = 0, std::function<T(mmatrix<T>)> const& Norm = euclid);
+        static std::vector< meigen<T> > eigen(mmatrix<T> & Mat, std::size_t VecNo = 0, std::function<T(mmatrix<T>)> const& Norm = euclid);
 
-        static T vector_norm(mmatrix<T> && Vector, unsigned Norm = 2);
-        static T vector_norm(mmatrix<T> & Vector, unsigned Norm = 2);
+        static T vector_norm(mmatrix<T> && Vector, std::size_t Norm = 2);
+        static T vector_norm(mmatrix<T> & Vector, std::size_t Norm = 2);
         static T vector_norm(mmatrix<T> && Vector, std::function<T(mmatrix<T>)> const& Norm);
         static T vector_norm(mmatrix<T> & Vector, std::function<T(mmatrix<T>)> const& Norm);
 
         static const std::function<T(mmatrix<T>)> euclid;
         static const std::function<T(mmatrix<T>)> taxicap;
 
-        static mmatrix<T> vector_norms(mmatrix<T> && Matrix, unsigned Norm = 2);
-        static mmatrix<T> vector_norms(mmatrix<T> & Matrix, unsigned Norm = 2);
+        static mmatrix<T> vector_norms(mmatrix<T> && Matrix, std::size_t Norm = 2);
+        static mmatrix<T> vector_norms(mmatrix<T> & Matrix, std::size_t Norm = 2);
         static mmatrix<T> vector_norms(mmatrix<T> && Matrix, std::function<mmatrix<T>(mmatrix<T>)> const& Norm);
         static mmatrix<T> vector_norms(mmatrix<T> & Matrix, std::function<mmatrix<T>(mmatrix<T>)> const& Norm);
 
@@ -172,22 +175,22 @@ class mmatrix{
 
         //TODO: lp-norm, infty-norm, cosine distance, hamming distance, edit distance
 
-        static void thread(unsigned thrd = 2);
-        static unsigned thread();
+        static void thread(std::size_t thrd = 2);
+        static std::size_t thread();
 
     private:
-        static mmatrix<T> l_p_norms(mmatrix<T> && Matrix, unsigned Norm);
-        static mmatrix<T> l_p_norms(mmatrix<T> & Matrix, unsigned Norm);
+        static mmatrix<T> l_p_norms(mmatrix<T> && Matrix, std::size_t Norm);
+        static mmatrix<T> l_p_norms(mmatrix<T> & Matrix, std::size_t Norm);
         static mmatrix<T> eucl_norms(mmatrix<T>  Matrix);
         static mmatrix<T> taxicap_norms(mmatrix<T>  Matrix);
-        static T l_p_norm(mmatrix<T> && Matrix, unsigned Norm);
-        static T l_p_norm(mmatrix<T> & Matrix, unsigned Norm);
+        static T l_p_norm(mmatrix<T> && Matrix, std::size_t Norm);
+        static T l_p_norm(mmatrix<T> & Matrix, std::size_t Norm);
         static T eucl_norm(mmatrix<T>  Matrix);
         static T taxicap_Norm(mmatrix<T>  Matrix);
         static mdimension check_length_input(const std::vector< std::vector<T> > & Mat);
         static mdimension check_length_input(const std::initializer_list< std::initializer_list<T> > & Mat);
 
-        static T l_p_norm(std::vector<T> & Matrix, unsigned Norm);
+        static T l_p_norm(std::vector<T> & Matrix, std::size_t Norm);
 };
 
 
@@ -738,7 +741,7 @@ mmatrix<T>& mmatrix<T>::operator*=(mmatrix<T> & Mat){
     std::vector<T*> Columns(Mat._Matrix.size());
     T **ValsR = &Columns.front();
 
-    for(unsigned int i = 0; i < Mat._Matrix.size(); i++){
+    for(std::size_t i = 0; i < Mat._Matrix.size(); i++){
         ValsR[i] = &RowsR[i].front();
     }
     #ifdef _OPENMP
@@ -746,11 +749,11 @@ mmatrix<T>& mmatrix<T>::operator*=(mmatrix<T> & Mat){
     {
         #pragma omp for
     #endif
-        for(unsigned int i = 0; i < _Dimensions.Row; i++){
+        for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
             T * Vals = &NewRows[i].front();
-            for(unsigned int j = 0; j < _Dimensions.Col; j++){
-                for(unsigned int k = 0; k < Columns.size(); k++){
+            for(std::size_tt j = 0; j < _Dimensions.Col; j++){
+                for(std::size_t k = 0; k < Columns.size(); k++){
                     Vals[j] += ValsL[k] * ValsR[k][j];
                 }
             }
@@ -827,7 +830,7 @@ mmatrix<T> mmatrix<T>::operator*(mmatrix<T> & Mat){
     std::vector<T*> Columns(Mat._Matrix.size());
     T **ValsR = &Columns.front();
 
-    for(unsigned int i = 0; i < Mat._Matrix.size(); i++){
+    for(std::size_t i = 0; i < Mat._Matrix.size(); i++){
         ValsR[i] = &RowsR[i].front();
     }
     #ifdef _OPENMP
@@ -835,11 +838,11 @@ mmatrix<T> mmatrix<T>::operator*(mmatrix<T> & Mat){
     {
         #pragma omp for
     #endif
-        for(unsigned int i = 0; i < NewDim.Row; i++){
+        for(std::size_t i = 0; i < NewDim.Row; i++){
             T * ValsL = &RowsL[i].front();
             T * Vals = &NewRows[i].front();
-            for(unsigned int j = 0; j < NewDim.Col; j++){
-                for(unsigned int k = 0; k < Columns.size(); k++){
+            for(std::size_t j = 0; j < NewDim.Col; j++){
+                for(std::size_t k = 0; k < Columns.size(); k++){
                     Vals[j] += ValsL[k] * ValsR[k][j];
                 }
             }
@@ -922,7 +925,7 @@ mmatrix<T> mmatrix<T>::transposition(){
     std::vector<T*> Columns(_Matrix.size());
     T **ValsR = &Columns.front();
 
-    for(unsigned int i = 0; i < _Matrix.size(); i++){
+    for(std::size_t i = 0; i < _Matrix.size(); i++){
         ValsR[i] = &RowsR[i].front();
     }
     #ifdef _OPENMP
@@ -930,9 +933,9 @@ mmatrix<T> mmatrix<T>::transposition(){
     {
         #pragma omp for
     #endif
-        for(unsigned int i = 0; i < NewDim.Row; i++){
+        for(std::size_t i = 0; i < NewDim.Row; i++){
             T * ValsL = &RowsL[i].front();
-            for(unsigned int j = 0; j < NewDim.Col; j++){
+            for(std::size_t j = 0; j < NewDim.Col; j++){
                 ValsL[j] = ValsR[j][i];
             }
         }
@@ -950,7 +953,7 @@ void mmatrix<T>::transpose(){
     std::vector<T*> Columns(_Matrix.size());
     T **ValsR = &Columns.front();
 
-    for(unsigned int i = 0; i < _Matrix.size(); i++){
+    for(std::size_t i = 0; i < _Matrix.size(); i++){
         ValsR[i] = &RowsR[i].front();
     }
     #ifdef _OPENMP
@@ -958,9 +961,9 @@ void mmatrix<T>::transpose(){
     {
         #pragma omp for
     #endif
-        for(unsigned int i = 0; i < _Dimensions.Col; i++){
+        for(std::size_t i = 0; i < _Dimensions.Col; i++){
             T * ValsL = &RowsL[i].front();
-            for(unsigned int j = 0; j < _Dimensions.Row; j++){
+            for(std::size_t j = 0; j < _Dimensions.Row; j++){
                 ValsL[j] = ValsR[j][i];
             }
         }
@@ -1085,11 +1088,11 @@ typename std::vector< std::vector<T> >::iterator mmatrix<T>::end(){
 
 /*---static-------------------------------------------------------------------*/
 template<typename T>
-mmatrix<T> mmatrix<T>::repmat(mmatrix<T> && Mat, unsigned Row, unsigned Col){
+mmatrix<T> mmatrix<T>::repmat(mmatrix<T> && Mat, std::size_t Row, std::size_t Col){
     return repmat(Mat, Row, Col);
 }
 template<typename T>
-mmatrix<T> mmatrix<T>::repmat(mmatrix<T> & Mat, unsigned Row, unsigned Col){
+mmatrix<T> mmatrix<T>::repmat(mmatrix<T> & Mat, std::size_t Row, std::size_t Col){
     mmatrix<T> RepMat(Mat);
     if(Row == 0 || Col == 0){
         throw std::out_of_range("repmat: column and row factor has to be non-zero.");
@@ -1101,8 +1104,8 @@ mmatrix<T> mmatrix<T>::repmat(mmatrix<T> & Mat, unsigned Row, unsigned Col){
     {
         #pragma omp for
     #endif
-    for(unsigned i = 0; i < Mat.row_size(); i++){
-        for(unsigned j = 1; j < Col; j++){
+    for(std::size_t i = 0; i < Mat.row_size(); i++){
+        for(std::size_t j = 1; j < Col; j++){
             RepMat[i].insert(RepMat[i].end(),Mat[i].begin(),Mat[i].end());
         }
     }
@@ -1117,7 +1120,7 @@ mmatrix<T> mmatrix<T>::repmat(mmatrix<T> & Mat, unsigned Row, unsigned Col){
     {
         #pragma omp for
     #endif
-        for(unsigned i = Mat.row_size(); i < RepMat.row_size(); i++){
+        for(std::size_t i = Mat.row_size(); i < RepMat.row_size(); i++){
             RepMat[i] = RepMat[i%Mat.row_size()];
         }
     #ifdef _OPENMP
@@ -1133,8 +1136,8 @@ void mmatrix<T>::transform(mmatrix<T> && Mat, std::function<T(T)> const& func){
 }
 template<typename T>
 void mmatrix<T>::transform(mmatrix<T> & Mat, std::function<T(T)> const& func){
-    for(unsigned i = 0; i < Mat.row_size(); i++){
-        for(unsigned j = 0; j < Mat.col_size(); j++){
+    for(std::size_t i = 0; i < Mat.row_size(); i++){
+        for(std::size_t j = 0; j < Mat.col_size(); j++){
             func(Mat[i][j]);
         }
     }
@@ -1152,7 +1155,7 @@ mmatrix<T> mmatrix<T>::max(mmatrix<T> & Mat){
     {
         #pragma omp for
     #endif
-        for(unsigned i = 0; i < Mat.row_size(); i++){
+        for(std::size_t i = 0; i < Mat.row_size(); i++){
             Max[i][0] = *std::max(Mat[i].begin(),Mat[i].end());
         }
     #ifdef _OPENMP
@@ -1172,13 +1175,23 @@ mmatrix<T> mmatrix<T>::min(mmatrix<T> & Mat){
     {
         #pragma omp for
     #endif
-        for(unsigned i = 0; i < Mat.row_size(); i++){
+        for(std::size_t i = 0; i < Mat.row_size(); i++){
             Min[i][0] = *std::min(Mat[i].begin(),Mat[i].end());
         }
     #ifdef _OPENMP
     }
     #endif
     return Min;
+}
+
+template<typename T>
+mmatrix<T> mmatrix<T>::sum(mmatrix<T> && Mat){
+    return sum(Mat);
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::sum(mmatrix<T> & Mat){
+    mmatrix<T> Sum(1,Mat.row_size());
+    for(std::size_t)
 }
 
 template<typename T>
@@ -1202,14 +1215,14 @@ mmatrix<T> mmatrix<T>::covariance(mmatrix<T> & Mat){
     std::vector<T> * Rows = &Mat._Matrix.front();
     T * MeanCol = &MeanVec.front();
 
-    for(unsigned int i = 0; i < Mat._Matrix.size(); i++){
+    for(std::size_t i = 0; i < Mat._Matrix.size(); i++){
         #ifdef _OPENMP
         #pragma omp parallel
         {
             T * Vals = &Rows[i].front();
             #pragma omp for
         #endif
-            for(unsigned int j = 0; j < Mat._Dimensions.Col; j++){
+            for(std::size_t j = 0; j < Mat._Dimensions.Col; j++){
                 MeanCol[j] += Vals[j];
             }
         #ifdef _OPENMP    
@@ -1221,7 +1234,7 @@ mmatrix<T> mmatrix<T>::covariance(mmatrix<T> & Mat){
     {
         #pragma omp for
     #endif
-        for(unsigned int i = 0; i < Mat._Dimensions.Col; i++){
+        for(std::size_t i = 0; i < Mat._Dimensions.Col; i++){
             MeanCol[i] /= Mat._Dimensions.Row;
         }
     #ifdef _OPENMP
@@ -1272,9 +1285,9 @@ mmatrix<T> mmatrix<T>::gramian(mmatrix<T> & Mat){
     {
         #pragma omp for
     #endif
-        for(unsigned i = 0; i < GramianMat.row_size(); i++){
+        for(std::size_t i = 0; i < GramianMat.row_size(); i++){
             T * GVec = &GMat[i].front();
-            for(unsigned j = 0; j < GramianMat.col_size(); j++){
+            for(std::size_t j = 0; j < GramianMat.col_size(); j++){
                 RMean[i] += GVec[j];      
             }
         }
@@ -1282,14 +1295,14 @@ mmatrix<T> mmatrix<T>::gramian(mmatrix<T> & Mat){
     }
     #endif
 
-    for(unsigned i = 0; i < GramianMat.row_size(); i++){
+    for(std::size_t i = 0; i < GramianMat.row_size(); i++){
         #ifdef _OPENMP
         #pragma omp parallel
         {
             T * GVec = &GMat[i].front();
             #pragma omp for
         #endif
-            for(unsigned j = 0; j < GramianMat.col_size(); j++){
+            for(std::size_t j = 0; j < GramianMat.col_size(); j++){
                 CMean[j] += GVec[j];       
             }
         #ifdef _OPENMP
@@ -1298,7 +1311,7 @@ mmatrix<T> mmatrix<T>::gramian(mmatrix<T> & Mat){
     }
 
     T TotalMean = T();
-    for(unsigned i = 0; i < RowMean.size(); i++){
+    for(std::size_t i = 0; i < RowMean.size(); i++){
         TotalMean += RowMean[i];
     }
 
@@ -1308,7 +1321,7 @@ mmatrix<T> mmatrix<T>::gramian(mmatrix<T> & Mat){
     {
         #pragma omp for
     #endif
-        for(unsigned i = 0; i < RowMean.size(); i++){
+        for(std::size_t i = 0; i < RowMean.size(); i++){
             RMean[i] /= RowMean.size();
             CMean[i] /= RowMean.size();
         }
@@ -1322,9 +1335,9 @@ mmatrix<T> mmatrix<T>::gramian(mmatrix<T> & Mat){
     {
         #pragma omp for
     #endif
-        for(unsigned i = 0; i < GramianMat.row_size(); i++){
+        for(std::size_t i = 0; i < GramianMat.row_size(); i++){
             T * GVec = &GMat[i].front();
-            for(unsigned j = 0; j < GramianMat.col_size(); j++){
+            for(std::size_t j = 0; j < GramianMat.col_size(); j++){
                 GVec[j] = -0.5*(GVec[j] -RMean[i] - CMean[j] +TotalMean);
             }
         }
@@ -1335,11 +1348,11 @@ mmatrix<T> mmatrix<T>::gramian(mmatrix<T> & Mat){
     return GramianMat;
 }
 template<typename T>
-mmatrix<T> mmatrix<T>::distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, unsigned Norm){
+mmatrix<T> mmatrix<T>::distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, std::size_t Norm){
     return distance(Mat1, Mat2, Norm);
 }
 template<typename T>
-mmatrix<T> mmatrix<T>::distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, unsigned Norm){
+mmatrix<T> mmatrix<T>::distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::size_t Norm){
     if(Mat1.col_size() != Mat2.col_size()){
         throw std::out_of_range("distance: Matrix1 col_size (" + std::to_string(Mat1.col_size()) + ") != Matrix2 col_size (" + std::to_string(Mat2.col_size()) + ")");
     }
@@ -1349,9 +1362,9 @@ mmatrix<T> mmatrix<T>::distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, unsigned N
     {
         #pragma omp for
     #endif
-        for(unsigned i = 0; i < Mat1.row_size(); i++){
+        for(std::size_t i = 0; i < Mat1.row_size(); i++){
             mmatrix<T> M(Mat1[i]);
-            for(unsigned j = i+1; j < Mat2.row_size(); j++){
+            for(std::size_t j = i+1; j < Mat2.row_size(); j++){
                 DistMat[i][j] = l_p_norm(M-Mat2[j],Norm);
                 DistMat[j][i] = DistMat[i][j];
             }
@@ -1376,9 +1389,9 @@ mmatrix<T> mmatrix<T>::distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::funct
     {
         #pragma omp for
     #endif
-        for(unsigned i = 0; i < Mat1.row_size(); i++){
+        for(std::size_t i = 0; i < Mat1.row_size(); i++){
             mmatrix<T> M(Mat1[i]);
-            for(unsigned j = 0; j < Mat2.row_size(); j++){
+            for(std::size_t j = 0; j < Mat2.row_size(); j++){
                 DistMat[i][j] = Norm(M-Mat2[j]);
             }
         }
@@ -1390,11 +1403,11 @@ mmatrix<T> mmatrix<T>::distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::funct
 
 
 template<typename T>
-std::vector< meigen<T> > mmatrix<T>::eigen(mmatrix<T> && Mat, unsigned VecNo, std::function<T(mmatrix<T>)> const& Norm){
+std::vector< meigen<T> > mmatrix<T>::eigen(mmatrix<T> && Mat, std::size_t VecNo, std::function<T(mmatrix<T>)> const& Norm){
     return eigen(Mat, VecNo, Norm);
 }
 template<typename T>
-std::vector< meigen<T> > mmatrix<T>::eigen(mmatrix<T> & Mat, unsigned VecNo, std::function<T(mmatrix<T>)> const& Norm){
+std::vector< meigen<T> > mmatrix<T>::eigen(mmatrix<T> & Mat, std::size_t VecNo, std::function<T(mmatrix<T>)> const& Norm){
     if(VecNo == 0){
         VecNo = Mat.row_size();
     }
@@ -1407,7 +1420,7 @@ std::vector< meigen<T> > mmatrix<T>::eigen(mmatrix<T> & Mat, unsigned VecNo, std
             + ", therefore number of "+ std::to_string(VecNo)+" eigen vectors is to high.");
     }
 
-    for(unsigned i = 0; i < VecNo; i++){
+    for(std::size_t i = 0; i < VecNo; i++){
         Eigens[i] = meigen<T>::power_iteration(EigenMat, Norm);
         EigenMat -= Eigens[i].vector().transposition()*Eigens[i].vector()*Eigens[i].value();
     }
@@ -1417,11 +1430,11 @@ std::vector< meigen<T> > mmatrix<T>::eigen(mmatrix<T> & Mat, unsigned VecNo, std
 
 
 template<typename T>
-T mmatrix<T>::vector_norm(mmatrix<T> && Vector, unsigned LPNorm){
+T mmatrix<T>::vector_norm(mmatrix<T> && Vector, std::size_t LPNorm){
     return vector_norm(Vector, LPNorm);
 }
 template<typename T>
-T mmatrix<T>::vector_norm(mmatrix<T> & Vector, unsigned LPNorm){
+T mmatrix<T>::vector_norm(mmatrix<T> & Vector, std::size_t LPNorm){
     return l_p_norm(Vector, LPNorm);
 }
 template<typename T>
@@ -1434,11 +1447,11 @@ T mmatrix<T>::vector_norm(mmatrix<T> & Vector, std::function<T(mmatrix<T>)> cons
 }
 
 template<typename T>
-T mmatrix<T>::l_p_norm(mmatrix<T> && Matrix, unsigned Norm){
+T mmatrix<T>::l_p_norm(mmatrix<T> && Matrix, std::size_t Norm){
     return l_p_norm(Matrix,Norm);
 }
 template<typename T>
-T mmatrix<T>::l_p_norm(mmatrix<T> & Matrix, unsigned Norm){
+T mmatrix<T>::l_p_norm(mmatrix<T> & Matrix, std::size_t Norm){
     if(Matrix.row_size() != 1){
         throw std::out_of_range("l_p_norm: Matrix not in vector format; row dimension must be one.");
     }
@@ -1463,11 +1476,11 @@ const std::function<T(mmatrix<T>)> mmatrix<T>::taxicap = &mmatrix<T>::taxicap_no
 
 
 template<typename T>
-mmatrix<T> mmatrix<T>::vector_norms(mmatrix<T> && Matrix, unsigned Norm){
+mmatrix<T> mmatrix<T>::vector_norms(mmatrix<T> && Matrix, std::size_t Norm){
     return vector_norms(Matrix);
 }
 template<typename T>
-mmatrix<T> mmatrix<T>::vector_norms(mmatrix<T> & Matrix, unsigned Norm){
+mmatrix<T> mmatrix<T>::vector_norms(mmatrix<T> & Matrix, std::size_t Norm){
     return l_p_norms(Matrix,Norm);
 }
 template<typename T>
@@ -1479,11 +1492,11 @@ mmatrix<T> mmatrix<T>::vector_norms(mmatrix<T> & Matrix, std::function<mmatrix<T
     return Norm(Matrix);
 }
 template<typename T>
-mmatrix<T> mmatrix<T>::l_p_norms(mmatrix<T> && Matrix, unsigned Norm){
+mmatrix<T> mmatrix<T>::l_p_norms(mmatrix<T> && Matrix, std::size_t Norm){
     return l_p_norms(Matrix, Norm);
 }
 template<typename T>
-mmatrix<T> mmatrix<T>::l_p_norms(mmatrix<T> & Matrix, unsigned Norm){
+mmatrix<T> mmatrix<T>::l_p_norms(mmatrix<T> & Matrix, std::size_t Norm){
     mmatrix<T> Norms(1,Matrix.row_size());
     T * NormVec = &Norms.begin()->front();
     std::vector<T> * MVec = &Matrix.front();
@@ -1492,7 +1505,7 @@ mmatrix<T> mmatrix<T>::l_p_norms(mmatrix<T> & Matrix, unsigned Norm){
     {
         #pragma omp for
     #endif
-        for(int i = 0; i < Matrix.row_size(); i++){
+        for(std::size_t i = 0; i < Matrix.row_size(); i++){
             T UnSqr =  std::accumulate(MVec[i].begin(),MVec[i].end(), T(), [&Norm](T & SumPart, T & Element){
                 return SumPart + std::pow(std::abs(Element),Norm);
             });
@@ -1553,10 +1566,10 @@ mdimension mmatrix<T>::check_length_input(const std::initializer_list< std::init
 }
 
 template<typename T>
-unsigned mmatrix<T>::threadNumber = 2;
+std::size_t mmatrix<T>::threadNumber = 2;
 
 template<typename T>
-void mmatrix<T>::thread(unsigned thrd){
+void mmatrix<T>::thread(std::size_t thrd){
     threadNumber = thrd;
     #ifdef _OPENMP
     omp_set_dynamic(0);
@@ -1565,7 +1578,7 @@ void mmatrix<T>::thread(unsigned thrd){
 }
 
 template<typename T>
-unsigned mmatrix<T>::thread(){
+std::size_t mmatrix<T>::thread(){
     return threadNumber;
 }
 #endif

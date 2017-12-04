@@ -21,13 +21,13 @@ namespace data_learning{
                 mmatrix<T> _DataMatrix;
                 mmatrix<T> _Prototypes;
                 mmatrix<T> _Assignments;
-                unsigned _K;
+                std::size_t _K;
                 static double _Threshold;
 
             public:
-                kmeans(unsigned K);
-                kmeans(mmatrix<T> && Mat, unsigned K);
-                kmeans(mmatrix<T> & Mat, unsigned K);
+                kmeans(std::size_t K);
+                kmeans(mmatrix<T> && Mat, std::size_t K);
+                kmeans(mmatrix<T> & Mat, std::size_t K);
 
                 void initial_prototypes(mmatrix<T> & Mat);
                 void data_matrix(mmatrix<T> && Mat);
@@ -35,16 +35,16 @@ namespace data_learning{
                 void threshold(T thresh);
 
                 double cluster();
-                std::vector<double> clustering(unsigned Steps = 1e10);
+                std::vector<double> clustering(std::size_t Steps = 1e10);
 
                 mmatrix<T> data_matrix();
                 mmatrix<T> prototypes();
                 mmatrix<T> assignemtns();
                 T threshold();
-                unsigned k();
+                std::size_t k();
 
-                std::vector<unsigned> labels();
-                std::vector< std::vector<unsigned> > clusters();
+                std::vector<std::size_t> labels();
+                std::vector< std::vector<std::size_t> > clusters();
 
                 void reset();
 
@@ -56,7 +56,7 @@ namespace data_learning{
         double kmeans<T>::_Threshold = T(1e-4);
 
         template<typename T>
-        kmeans<T>::kmeans(unsigned K):_K(K){
+        kmeans<T>::kmeans(std::size_t K):_K(K){
             if(_K < 2){
                 throw std::out_of_range("K, number of prototypes, has to be greater than 1.");
             }
@@ -66,7 +66,7 @@ namespace data_learning{
             }
         }
         template<typename T>
-        kmeans<T>::kmeans(mmatrix<T> && Mat, unsigned K):_K(K){
+        kmeans<T>::kmeans(mmatrix<T> && Mat, std::size_t K):_K(K){
             if(_K < 2){
                 throw std::out_of_range("K, number of prototypes, has to be greater than 1.");
             }
@@ -77,7 +77,7 @@ namespace data_learning{
             data_matrix(Mat);
         }
         template<typename T>
-        kmeans<T>::kmeans(mmatrix<T> & Mat, unsigned K):_K(K){
+        kmeans<T>::kmeans(mmatrix<T> & Mat, std::size_t K):_K(K){
             if(_K < 2){
                 throw std::out_of_range("K, number of prototypes, has to be greater than 1.");
             }
@@ -115,20 +115,20 @@ namespace data_learning{
 
         template<typename T>
         double kmeans<T>::cluster(){
-            for(unsigned i = 0; i < _DataMatrix.row_size(); i++){
+            for(std::size_t i = 0; i < _DataMatrix.row_size(); i++){
                 mmatrix<T> Assignment = mmatrix<T>::vector_norms(_Prototypes - _DataMatrix[i], 2).transposition();
                 _Assignments[i][std::max_element(_Assignments[i].begin(),_Assignments[i].end())-_Assignments[i].begin()] = T();
-                unsigned Idx = std::max_element(Assignment[0].begin(),Assignment[0].end()) - Assignment[0].begin();
+                std::size_t Idx = std::max_element(Assignment[0].begin(),Assignment[0].end()) - Assignment[0].begin();
                 _Assignments[Idx] = T(1);
 
                 
             }
         }
         template<typename T>
-        std::vector<double> kmeans<T>::clustering(unsigned Steps){
+        std::vector<double> kmeans<T>::clustering(std::size_t Steps){
             std::vector<double> ReconstError();
             double Gradient;
-            unsigned Idx = 1;
+            std::size_t Idx = 1;
 
             ReconstError.push_back(cluster());
             T ClsErr;
@@ -163,22 +163,22 @@ namespace data_learning{
             return _Threshold;
         }
         template<typename T>
-        unsigned kmeans<T>::k(){
+        std::size_t kmeans<T>::k(){
             return _K;
         }
 
         template<typename T>
-        std::vector<unsigned> kmeans<T>::labels(){
-            std::vector<unsigned> Labels(_Assignments.row_size());
-            for(unsigned i = 0; i < _Assignments; i++){
+        std::vector<std::size_t> kmeans<T>::labels(){
+            std::vector<std::size_t> Labels(_Assignments.row_size());
+            for(std::size_t i = 0; i < _Assignments; i++){
                 Labels[i] = std::max_element(_Assignments[i].begin(),_Assignments[i].end())-_Assignments[i].begin();
             }
             return labels;
         }
         template<typename T>
-        std::vector< std::vector<unsigned> > kmeans<T>::clusters(){
-            std::vector< std::vector<unsigned> > Clusters(_K);
-            for(unsigned i = 0; i < _Assignments.row_size(); i++){
+        std::vector< std::vector<std::size_t> > kmeans<T>::clusters(){
+            std::vector< std::vector<std::size_t> > Clusters(_K);
+            for(std::size_t i = 0; i < _Assignments.row_size(); i++){
                 Clusters[(std::max_element(_Assignments[i].begin(),_Assignments[i].end())-_Assignments[i].begin())].push_back(i);
             }
             return Clusters;
@@ -193,11 +193,11 @@ namespace data_learning{
         template<typename T>
         mmatrix<T> kmeans<T>::initial_proto(mmatrix<T> & Mat){
             mmatrix<T> Protos;
-            std::unordered_set<unsigned> Indices();
-            unsigned i = 0;
+            std::unordered_set<std::size_t> Indices();
+            std::size_t i = 0;
 
             while(i < _K){
-                unsigned idx = std::fmod(std::rand(),Mat.row_size());
+                std::size_t idx = std::fmod(std::rand(),Mat.row_size());
                 auto Search = Indices.find(idx);
                 if(Search == Indices.end()){
                     Protos.push_back(Mat[idx]);
