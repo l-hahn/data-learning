@@ -116,13 +116,21 @@ namespace data_learning{
         template<typename T>
         double kmeans<T>::cluster(){
             for(std::size_t i = 0; i < _DataMatrix.row_size(); i++){
-                mmatrix<T> Assignment = mmatrix<T>::vector_norms(_Prototypes - _DataMatrix[i], 2).transposition();
+                mmatrix<T> Assignment = mmatrix<T>::vector_norms(_Prototypes - _DataMatrix[i], mmatrix<T>::euclids).transposition();
                 _Assignments[i][std::max_element(_Assignments[i].begin(),_Assignments[i].end())-_Assignments[i].begin()] = T();
                 std::size_t Idx = std::max_element(Assignment[0].begin(),Assignment[0].end()) - Assignment[0].begin();
-                _Assignments[Idx] = T(1);
-
-                
+                _Assignments[Idx] = T(1);   
             }
+            for(std::size_t i = 0; i < _K; i++){
+                _Assignments.transposition()[i];
+                mmatrix<T> NewProto = _DataMatrix.vec_entry_mult(_Assignments.transposition()[i]);
+                _Prototypes[i] = mmatrix<T>::sum(NewProto.transposition()).transposition()/mmatrix<T>::sum(_Assignments.transposition()[i])[0][0];
+            }
+            double ReconstError = 0;
+            for(std::size_t i = 0; i < _DataMatrix.row_size(); i++){
+
+            }
+            return ReconstError;
         }
         template<typename T>
         std::vector<double> kmeans<T>::clustering(std::size_t Steps){
@@ -132,7 +140,7 @@ namespace data_learning{
 
             ReconstError.push_back(cluster());
             T ClsErr;
-            
+
             do{
                 ClsErr = mmatrix<T>::min(mmatrix<T>::max(_Assignments.transposition()).transposition())[0][0];
                 if(ClsErr == 0){

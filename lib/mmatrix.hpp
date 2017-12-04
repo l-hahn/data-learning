@@ -113,6 +113,10 @@ class mmatrix{
         mmatrix<T> entry_mult(mmatrix & Mat);
         mmatrix<T>& equal_entry_mult(mmatrix<T> && Mat);
         mmatrix<T>& equal_entry_mult(mmatrix<T> & Mat);
+        mmatrix<T> vec_entry_mult(std::vector<T> && Mat);
+        mmatrix<T> vec_entry_mult(std::vector<T> & Mat);
+        mmatrix<T>& equal_vec_entry_mult(std::vector<T> && Mat);
+        mmatrix<T>& equal_vec_entry_mult(std::vector<T> & Mat);
 
         std::string to_string(char Delimiter = ' ', char Separator = '\n', char Border = 0);
 
@@ -752,7 +756,7 @@ mmatrix<T>& mmatrix<T>::operator*=(mmatrix<T> & Mat){
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
             T * Vals = &NewRows[i].front();
-            for(std::size_tt j = 0; j < _Dimensions.Col; j++){
+            for(std::size_t j = 0; j < _Dimensions.Col; j++){
                 for(std::size_t k = 0; k < Columns.size(); k++){
                     Vals[j] += ValsL[k] * ValsR[k][j];
                 }
@@ -977,7 +981,7 @@ template<typename T>
 mmatrix<T> mmatrix<T>::entry_mult(mmatrix<T> && Mat){
     if((_Dimensions.Row - Mat._Dimensions.Row) != 0 || (_Dimensions.Row - Mat._Dimensions.Row) != 0){
         throw std::out_of_range("entry_mult: Matrix dimensions "+ _Dimensions.to_string()
-            + Mat._Dimensions.to_string() + " are not conforming.");
+            +" and "+ Mat._Dimensions.to_string() + " are not conforming.");
     }
     return entry_mult(Mat);
 }
@@ -985,7 +989,7 @@ template<typename T>
 mmatrix<T> mmatrix<T>::entry_mult(mmatrix<T> & Mat){
     if((_Dimensions.Row - Mat._Dimensions.Row) != 0 || (_Dimensions.Row - Mat._Dimensions.Row) != 0){
         throw std::out_of_range("entry_mult: Matrix dimensions "+ _Dimensions.to_string()
-            + Mat._Dimensions.to_string() + " are not conforming.");
+            +" and "+ Mat._Dimensions.to_string() + " are not conforming.");
     }
     mmatrix<T> NewMat(*this);
     std::vector<T> * RowsR = &Mat._Matrix.front();
@@ -1011,7 +1015,7 @@ template<typename T>
 mmatrix<T>& mmatrix<T>::equal_entry_mult(mmatrix<T> && Mat){
     if((_Dimensions.Row - Mat._Dimensions.Row) != 0 || (_Dimensions.Row - Mat._Dimensions.Row) != 0){
         throw std::out_of_range("equal_entry_mult: Matrix dimensions "+ _Dimensions.to_string()
-            + Mat._Dimensions.to_string() + " are not conforming.");
+            +" and "+ Mat._Dimensions.to_string() + " are not conforming.");
     }
     return equal_entry_mult(Mat);
 }
@@ -1019,7 +1023,7 @@ template<typename T>
 mmatrix<T>& mmatrix<T>::equal_entry_mult(mmatrix<T> & Mat){
     if((_Dimensions.Row - Mat._Dimensions.Row) != 0 || (_Dimensions.Row - Mat._Dimensions.Row) != 0){
         throw std::out_of_range("equal_entry_mult: Matrix dimensions "+ _Dimensions.to_string()
-            + Mat._Dimensions.to_string() + " are not conforming.");
+            +" and "+ Mat._Dimensions.to_string() + " are not conforming.");
     }
     std::vector<T> * RowsL = &_Matrix.front();
     std::vector<T> * RowsR = &Mat._Matrix.front();
@@ -1031,6 +1035,72 @@ mmatrix<T>& mmatrix<T>::equal_entry_mult(mmatrix<T> & Mat){
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
             T * ValsR = &RowsR[i].front();
+            for(std::size_t j = 0; j < _Dimensions.Col; j++){
+                ValsL[j] *= ValsR[j];
+            }
+        }
+    #ifdef _OPENMP
+    }
+    #endif
+    return *this;
+}
+
+template<typename T>
+mmatrix<T> mmatrix<T>::vec_entry_mult(std::vector<T> && Mat){
+    if(_Dimensions.Row != Mat.size()){
+        throw std::out_of_range("vec_entry_mult: Matrix dimensions "+ _Dimensions.to_string()
+            +" and " + Mat._Dimensions.to_string() + " are not conforming.");
+    }
+    return entry_mult(Mat);
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::vec_entry_mult(std::vector<T> & Mat){
+    if(_Dimensions.Row != Mat.size()){
+        throw std::out_of_range("vec_entry_mult: Matrix dimensions "+ _Dimensions.to_string()
+            + " and [" + std::to_string(Mat.size()) + "x1] are not conforming.");
+    }
+    mmatrix<T> NewMat(*this);
+    std::vector<T> * RowsL = &NewMat._Matrix.front();
+    T * ValsR = &Mat.front();
+    #ifdef _OPENMP
+    #pragma omp parallel
+    {
+        #pragma omp for
+    #endif
+        for(std::size_t i = 0; i < _Dimensions.Row; i++){
+            T * ValsL = &RowsL[i].front();
+            for(std::size_t j = 0; j < _Dimensions.Col; j++){
+                ValsL[j] *= ValsR[j];
+            }
+        }
+    #ifdef _OPENMP
+    }
+    #endif
+    return NewMat;
+}
+template<typename T>
+mmatrix<T>& mmatrix<T>::equal_vec_entry_mult(std::vector<T> && Mat){
+    if(_Dimensions.Row != Mat.size()){
+        throw std::out_of_range("equal_entry_mult: Matrix dimensions "+ _Dimensions.to_string()
+            +" and " + std::to_string(Mat.size()) + " are not conforming.");
+    }
+    return equal_entry_mult(Mat);
+}
+template<typename T>
+mmatrix<T>& mmatrix<T>::equal_vec_entry_mult(std::vector<T> & Mat){
+    if(_Dimensions.Row != Mat.size()){
+        throw std::out_of_range("equal_entry_mult: Matrix dimensions "+ _Dimensions.to_string()
+            +" and " + std::to_string(Mat.size()) + " are not conforming.");
+    }
+    std::vector<T> * RowsL = &_Matrix.front();
+    T * ValsR = &Mat.front();
+    #ifdef _OPENMP
+    #pragma omp parallel
+    {
+        #pragma omp for
+    #endif
+        for(std::size_t i = 0; i < _Dimensions.Row; i++){
+            T * ValsL = &RowsL[i].front();
             for(std::size_t j = 0; j < _Dimensions.Col; j++){
                 ValsL[j] *= ValsR[j];
             }
@@ -1149,6 +1219,9 @@ mmatrix<T> mmatrix<T>::max(mmatrix<T> && Mat){
 }
 template<typename T>
 mmatrix<T> mmatrix<T>::max(mmatrix<T> & Mat){
+    if(Mat.row_size() == 0 || Mat.row_size() == 0){
+        throw std::out_of_range("max: column and row factor has to be non-zero.");
+    }
     mmatrix<T> Max(Mat.row_size(),1);
     #ifdef _OPENMP
     #pragma omp parallel
@@ -1169,6 +1242,9 @@ mmatrix<T> mmatrix<T>::min(mmatrix<T> && Mat){
 }
 template<typename T>
 mmatrix<T> mmatrix<T>::min(mmatrix<T> & Mat){
+    if(Mat.row_size() == 0 || Mat.row_size() == 0){
+        throw std::out_of_range("min: column and row factor has to be non-zero.");
+    }
     mmatrix<T> Min(Mat.row_size(),1);
     #ifdef _OPENMP
     #pragma omp parallel
@@ -1190,8 +1266,29 @@ mmatrix<T> mmatrix<T>::sum(mmatrix<T> && Mat){
 }
 template<typename T>
 mmatrix<T> mmatrix<T>::sum(mmatrix<T> & Mat){
+    if(Mat.row_size() == 0 || Mat.row_size() == 0){
+        throw std::out_of_range("sum: column and row factor has to be non-zero.");
+    }
     mmatrix<T> Sum(1,Mat.row_size());
-    for(std::size_t)
+    T * Vec = &Sum[0].front();
+    std::vector<T> * MatVec = &Mat.front();
+    #ifdef _OPENMP
+    #pragma omp parallel
+    {
+        #pragma omp for
+    #endif
+        for(std::size_t i = 0; i < Mat.row_size(); i++){
+            T * MVec = &MatVec[i].front();
+            T Sum();
+            for(std::size_t j = 0; j < Vec.size(); j++){
+                Sum += MVec[j];
+            }
+            Vec[i] = Sum;
+        }
+    #ifdef _OPENMP
+    }
+    #endif
+    return Sum;
 }
 
 template<typename T>
