@@ -34,22 +34,25 @@ namespace data_learning{
                 void data_matrix(mmatrix<T> & Mat);
                 void threshold(T thresh);
 
-                double cluster();
-                std::vector<double> clustering(std::size_t Steps = 1e10);
+                T cluster();
+                std::vector<T> clustering(std::size_t Steps = 1e10);
 
                 mmatrix<T> data_matrix();
                 mmatrix<T> prototypes();
-                mmatrix<T> assignemtns();
+                mmatrix<T> assignments();
                 T threshold();
                 std::size_t k();
 
                 std::vector<std::size_t> labels();
-                std::vector< std::vector<std::size_t> > clusters();
+                std::vector< std::vector<std::size_t> > label_clusters();
+                std::vector< mmatrix<T> > clusters();
 
                 void reset();
 
             private:
-                mmatrix<T> initial_proto(mmatrix<T> & Mat);
+                mmatrix<T> initial_proto();
+                void initial_assign();
+                void initialisation();
         };
 
         template<typename T>
@@ -97,6 +100,7 @@ namespace data_learning{
                 throw std::out_of_range("initial prototypes col size("+std::to_string(Mat.col_size())+") differs from data col size ("+std::to_string(_DataMatrix.col_size())+").");
             }
             _Prototypes = Mat;
+            initial_assign();
         }
         template<typename T>
         void kmeans<T>::data_matrix(mmatrix<T> && Mat){
@@ -105,8 +109,7 @@ namespace data_learning{
         template<typename T>
         void kmeans<T>::data_matrix(mmatrix<T> & Mat){
             _DataMatrix = Mat;
-            _Assignments = mmatrix<T>(_DataMatrix.row_size(), _K);
-            _Prototypes = initial_proto();
+            initialisation();
         }
         template<typename T>
         void kmeans<T>::threshold(T thresh){
@@ -114,44 +117,50 @@ namespace data_learning{
         }
 
         template<typename T>
-        double kmeans<T>::cluster(){
+        T kmeans<T>::cluster(){
+            T ReconstError = T(0);
             for(std::size_t i = 0; i < _DataMatrix.row_size(); i++){
-                mmatrix<T> Assignment = mmatrix<T>::vector_norms(_Prototypes - _DataMatrix[i], mmatrix<T>::euclids).transposition();
-                _Assignments[i][std::max_element(_Assignments[i].begin(),_Assignments[i].end())-_Assignments[i].begin()] = T();
+                mmatrix<T> Assignment = mmatrix<T>::vector_norms(_Prototypes - _DataMatrix[i], mmatrix<T>::euclids);
+                _Assignments[i][std::max_element(_Assignments[i].begin(),_Assignments[i].end())-_Assignments[i].begin()] = T(0);
                 std::size_t Idx = std::max_element(Assignment[0].begin(),Assignment[0].end()) - Assignment[0].begin();
-                _Assignments[Idx] = T(1);   
+                _Assignments[i][Idx] = T(1);   
             }
             for(std::size_t i = 0; i < _K; i++){
-                _Assignments.transposition()[i];
                 mmatrix<T> NewProto = _DataMatrix.vec_entry_mult(_Assignments.transposition()[i]);
-                _Prototypes[i] = mmatrix<T>::sum(NewProto.transposition()).transposition()/mmatrix<T>::sum(_Assignments.transposition()[i])[0][0];
+                _Prototypes[i] = (mmatrix<T>::sum(NewProto.transposition())/mmatrix<T>::sum(_Assignments.transposition()[i])[0][0])[0];
+                
             }
-            double ReconstError = 0;
             for(std::size_t i = 0; i < _DataMatrix.row_size(); i++){
-
+                ReconstError += (mmatrix<T>::vector_norms(_Prototypes - _DataMatrix[i],mmatrix<T>::euclids)*_Assignments[i])[0][0];
             }
             return ReconstError;
         }
         template<typename T>
-        std::vector<double> kmeans<T>::clustering(std::size_t Steps){
-            std::vector<double> ReconstError();
-            double Gradient;
+        std::vector<T> kmeans<T>::clustering(std::size_t Steps){
+            std::vector<T> ReconstError;
+            T Gradient;
             std::size_t Idx = 1;
 
             ReconstError.push_back(cluster());
-            T ClsErr;
 
             do{
-                ClsErr = mmatrix<T>::min(mmatrix<T>::max(_Assignments.transposition()).transposition())[0][0];
-                if(ClsErr == 0){
+                if(std::abs(mmatrix<T>::min(mmatrix<T>::max(_Assignments.transposition()))[0][0]) < 10e-4){
                     Idx = 1;
                     ReconstError.clear();
-                    reset();
+                    initialisation();
                     ReconstError.push_back(cluster());
                 }
-                Gradient = std::abs(ReconstError[Idx]-ReconstError[Idx-1])/(ReconstError[Idx-1]);
+                ReconstError.push_back(cluster());
+                for(auto Val : ReconstError){
+                    std::cout << Val << " ";
+                }
+                std::cout << std::endl;
+                Gradient = (double)std::abs(ReconstError[Idx]-ReconstError[Idx-1])/(ReconstError[Idx-1]);
+                //std::cout << Idx << " " << Gradient << " " << ReconstError[Idx] << std::endl;
+                Idx++;
+
             }while(Idx < Steps && Gradient > _Threshold);
-            return ReconstError();
+            return ReconstError;
         }
 
         template<typename T>
@@ -163,7 +172,7 @@ namespace data_learning{
             return _Prototypes;
         }
         template<typename T>
-        mmatrix<T> kmeans<T>::assignemtns(){
+        mmatrix<T> kmeans<T>::assignments(){
             return _Assignments;
         }
         template<typename T>
@@ -184,31 +193,43 @@ namespace data_learning{
             return labels;
         }
         template<typename T>
-        std::vector< std::vector<std::size_t> > kmeans<T>::clusters(){
+        std::vector< std::vector<std::size_t> > kmeans<T>::label_clusters(){
             std::vector< std::vector<std::size_t> > Clusters(_K);
             for(std::size_t i = 0; i < _Assignments.row_size(); i++){
                 Clusters[(std::max_element(_Assignments[i].begin(),_Assignments[i].end())-_Assignments[i].begin())].push_back(i);
             }
             return Clusters;
         }
-
         template<typename T>
-        void kmeans<T>::reset(){
-            _Assignments = mmatrix<T>(_DataMatrix.row_size(), _K);
-            _Prototypes = initial_proto();
+        std::vector< mmatrix<T> > kmeans<T>::clusters(){
+            std::vector< mmatrix<T> > Clusters(_K);
+            std::vector< std::vector<std::size_t> > cluster_label = label_clusters();
+            for(std::size_t i = 0; i < _K; i++){
+                Clusters[i].push_back(_Prototypes[i]);
+                for(std::size_t j = 0; j < cluster_label[i].size(); j++){
+                    Clusters[i].push_back(_DataMatrix[cluster_label[i][j]]);
+                }
+            }
+            return Clusters;
         }
 
         template<typename T>
-        mmatrix<T> kmeans<T>::initial_proto(mmatrix<T> & Mat){
+        void kmeans<T>::reset(){
+            _Prototypes = initial_proto();
+            initial_assign();
+        }
+
+        template<typename T>
+        mmatrix<T> kmeans<T>::initial_proto(){
             mmatrix<T> Protos;
-            std::unordered_set<std::size_t> Indices();
-            std::size_t i = 0;
+            std::unordered_set<std::size_t> Indices;
+            std::size_t i = 0, idx;
 
             while(i < _K){
-                std::size_t idx = std::fmod(std::rand(),Mat.row_size());
+                idx = std::fmod(std::rand(),_DataMatrix.row_size());
                 auto Search = Indices.find(idx);
                 if(Search == Indices.end()){
-                    Protos.push_back(Mat[idx]);
+                    Protos.push_back(_DataMatrix[idx]);
                     Indices.insert(idx);
                     i++;
                 }
@@ -216,6 +237,27 @@ namespace data_learning{
 
             return Protos;
         }
+        template<typename T>
+        void kmeans<T>::initial_assign(){
+            mmatrix<T> Assignment;
+            std::size_t Idx;
+            for(std::size_t i = 0; i < _DataMatrix.row_size(); i++){
+                Assignment = mmatrix<T>::vector_norms(_Prototypes - _DataMatrix[i], mmatrix<T>::euclids);
+                Idx = std::max_element(Assignment[0].begin(),Assignment[0].end()) - Assignment[0].begin();
+                _Assignments[i][Idx] = T(1);
+            }
+        }
+
+        template<typename T>
+        void kmeans<T>::initialisation(){
+            std::string tmp;
+            do{
+                _Assignments = mmatrix<T>(_DataMatrix.row_size(), _K);
+                _Prototypes = initial_proto();
+                initial_assign();
+            }while(std::abs(mmatrix<T>::min(mmatrix<T>::max(_Assignments.transposition()))[0][0]) <1e-10);
+        }
+
 
       /*----------------------------------------------------------------------*/
         template<typename T = double>

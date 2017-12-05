@@ -10,15 +10,18 @@
 #include "../lib/learning.hpp"
 #include "../lib/clustering.hpp"
 
-void debug_matrix();
+void debug_kmeans();
+
 void debug_pca();
 void debug_mds();
 
+void debug_matrix();
 
 void split(const std::string &s, char delim, std::vector<double> &elems);
 std::vector<double> split(const std::string &s, char delim);
 
 int main(){
+    debug_kmeans();
     //debug_matrix();
     //debug_pca();
     //debug_mds();
@@ -26,45 +29,47 @@ int main(){
     return 0;
 }
 
-/*---Auxilliary---------------------------------------------------------------*/
 
-void debug_matrix(){
-    mmatrix<double> Mat1 = {{1,2,3},{4,5,6},{7,8,9}};
-    mmatrix<double> Mat2 = {{0,1,2},{3,4,5},{6,7,8}};
-    mmatrix<double> Vec1 = {10.0,11.0,12.0};
-    std::vector<double> Vec2 = {11.0,12.0,13.0};
-    double factor = 3;
+/*---clustering-------------------------------------------------------------*/
+void debug_kmeans(){
+    mmatrix<double> DataMat;
+    std::vector<double> data;
+    std::string Line;
+    std::size_t K;
 
-    std::cout << "Matrix 1:\n" << Mat1.to_string() << "\nMatrix2:\n" << Mat2.to_string() << std::endl << std::endl;
-    std::cout << "Vec 1:\n" << Vec1.to_string() << "\nVec2:\n";
-    for(auto Val : Vec2){
-        std::cout << Val << " ";
+    std::ifstream Input("test-data/small_cls.dat");
+    if(Input.is_open()){
+        while(std::getline(Input,Line)){
+            if(Line.size() != 0){
+                data = split(Line, ' ');
+                DataMat.push_back(data);
+            }
+        }
     }
-    std::cout << std::endl << std::endl;
+    Input.close();
 
-    std::cout << "M1+ M2 : \n" << (Mat1+Mat2).to_string() << std::endl << std::endl;
-    Mat1 += Mat2;
-    std::cout << "M1+=M2 : \n" << Mat1.to_string() << std::endl << std::endl;
-    std::cout << "M1- M2 : \n" << (Mat1-Mat2).to_string() << std::endl << std::endl;
-    Mat1 -= Mat2;
-    std::cout << "M1-=M2 : \n" << Mat1.to_string() << std::endl << std::endl;
+    K = 4;
+    data_learning::clustering::kmeans<double> KMeans = data_learning::clustering::kmeans<double>(DataMat,K);
 
-    std::cout << "M1* M2 : \n" << (Mat1*Mat2).to_string() << std::endl << std::endl;
-    Mat1 *= Mat2;
-    std::cout << "M1* " << factor << "  : \n" << (Mat1*factor).to_string() << std::endl << std::endl;
-    Mat1 *= factor;
-    std::cout << "M1*=" << factor << "  : \n" << Mat1.to_string() << std::endl << std::endl;
+    std::ofstream Output("test-data/s-cls_ErrDev.dat"); 
+    std::vector<double> ErrDev = KMeans.clustering();
+    for(std::size_t i = 0; i < ErrDev.size(); i++){
+        Output << ErrDev[i] << std::endl;
+    }
+    Output.close();
 
-    std::cout << "M1* V1': \n" << (Mat1*Vec1.transposition()).to_string() << std::endl << std::endl;
-    std::cout << "M1* V2 : \n" << (Mat1*Vec2).to_string() << std::endl << std::endl;
-    Mat1 *= Vec1.transposition();
-    std::cout << "M1*=V1 : \n" << Mat1.to_string() << std::endl << std::endl; 
-    Mat1.transpose();
-    Mat1 *= Vec2;
-    std::cout << "M1'*=V2 : \n" << Mat1.to_string() << std::endl << std::endl;
+    // Output = std::ofstream("test-data/small_clustered.dat"); 
+    // std::vector< mmatrix<double> > Clusters = KMeans.clusters();
+    // for(std::size_t i = 0; i < Clusters.size(); i++){
+    //     Output << Clusters[i].to_string() << std::endl << std::endl;
+    // }
+    // Output.close();
 
 }
 
+
+
+/*---data-mining------------------------------------------------------------*/
 void debug_pca(){
     mmatrix<double> DataMat, EigSpec, PrinComp, EigenVectors;
     std::vector<double> data;
@@ -149,6 +154,44 @@ void debug_mds(){
     Output.close();
 }
 
+/*---Auxilliary---------------------------------------------------------------*/
+void debug_matrix(){
+    mmatrix<double> Mat1 = {{1,2,3},{4,5,6},{7,8,9}};
+    mmatrix<double> Mat2 = {{0,1,2},{3,4,5},{6,7,8}};
+    mmatrix<double> Vec1 = {10.0,11.0,12.0};
+    std::vector<double> Vec2 = {11.0,12.0,13.0};
+    double factor = 3;
+
+    std::cout << "Matrix 1:\n" << Mat1.to_string() << "\nMatrix2:\n" << Mat2.to_string() << std::endl << std::endl;
+    std::cout << "Vec 1:\n" << Vec1.to_string() << "\nVec2:\n";
+    for(auto Val : Vec2){
+        std::cout << Val << " ";
+    }
+    std::cout << std::endl << std::endl;
+
+    std::cout << "M1+ M2 : \n" << (Mat1+Mat2).to_string() << std::endl << std::endl;
+    Mat1 += Mat2;
+    std::cout << "M1+=M2 : \n" << Mat1.to_string() << std::endl << std::endl;
+    std::cout << "M1- M2 : \n" << (Mat1-Mat2).to_string() << std::endl << std::endl;
+    Mat1 -= Mat2;
+    std::cout << "M1-=M2 : \n" << Mat1.to_string() << std::endl << std::endl;
+
+    std::cout << "M1* M2 : \n" << (Mat1*Mat2).to_string() << std::endl << std::endl;
+    Mat1 *= Mat2;
+    std::cout << "M1* " << factor << "  : \n" << (Mat1*factor).to_string() << std::endl << std::endl;
+    Mat1 *= factor;
+    std::cout << "M1*=" << factor << "  : \n" << Mat1.to_string() << std::endl << std::endl;
+
+    std::cout << "M1* V1': \n" << (Mat1*Vec1.transposition()).to_string() << std::endl << std::endl;
+    std::cout << "M1* V2 : \n" << (Mat1*Vec2).to_string() << std::endl << std::endl;
+    Mat1 *= Vec1.transposition();
+    std::cout << "M1*=V1 : \n" << Mat1.to_string() << std::endl << std::endl; 
+    Mat1.transpose();
+    Mat1 *= Vec2;
+    std::cout << "M1'*=V2 : \n" << Mat1.to_string() << std::endl << std::endl;
+}
+
+
 void split(const std::string &s, char delim, std::vector<double> &elems){
     std::stringstream ss;
     ss.str(s);
@@ -159,7 +202,6 @@ void split(const std::string &s, char delim, std::vector<double> &elems){
         }
     }
 }
-
 std::vector<double> split(const std::string &s, char delim){
     std::vector<double> elems;
     split(s, delim, elems);
