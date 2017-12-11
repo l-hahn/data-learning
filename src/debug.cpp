@@ -51,20 +51,19 @@ void debug_kmeans(){
     K = 4;
     data_learning::clustering::kmeans<double> KMeans = data_learning::clustering::kmeans<double>(DataMat,K);
 
-    std::ofstream Output("test-data/s-cls_ErrDev.dat"); 
+    std::ofstream Output("test-data/Cls_ErrDev.dat"); 
     std::vector<double> ErrDev = KMeans.clustering();
     for(std::size_t i = 0; i < ErrDev.size(); i++){
         Output << ErrDev[i] << std::endl;
     }
     Output.close();
 
-    // Output = std::ofstream("test-data/small_clustered.dat"); 
-    // std::vector< mmatrix<double> > Clusters = KMeans.clusters();
-    // for(std::size_t i = 0; i < Clusters.size(); i++){
-    //     Output << Clusters[i].to_string() << std::endl << std::endl;
-    // }
-    // Output.close();
-
+    Output = std::ofstream("test-data/clustered.dat"); 
+    std::vector< mmatrix<double> > Clusters = KMeans.clusters();
+    for(std::size_t i = 0; i < Clusters.size(); i++){
+        Output << Clusters[i].to_string() << std::endl << std::endl;
+    }
+    Output.close();
 }
 
 

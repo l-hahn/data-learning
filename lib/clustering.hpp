@@ -35,7 +35,7 @@ namespace data_learning{
                 void threshold(T thresh);
 
                 T cluster();
-                std::vector<T> clustering(std::size_t Steps = 1e10);
+                std::vector<T> clustering(std::size_t Steps = 1e4);
 
                 mmatrix<T> data_matrix();
                 mmatrix<T> prototypes();
@@ -56,7 +56,7 @@ namespace data_learning{
         };
 
         template<typename T>
-        double kmeans<T>::_Threshold = T(1e-4);
+        double kmeans<T>::_Threshold = 1e-4;
 
         template<typename T>
         kmeans<T>::kmeans(std::size_t K):_K(K){
@@ -138,28 +138,26 @@ namespace data_learning{
         template<typename T>
         std::vector<T> kmeans<T>::clustering(std::size_t Steps){
             std::vector<T> ReconstError;
-            T Gradient;
-            std::size_t Idx = 1;
+            std::size_t Idx = 1, Try = 0;
 
-            ReconstError.push_back(cluster());
-
-            do{
-                if(std::abs(mmatrix<T>::min(mmatrix<T>::max(_Assignments.transposition()))[0][0]) < 10e-4){
-                    Idx = 1;
-                    ReconstError.clear();
-                    initialisation();
-                    ReconstError.push_back(cluster());
+            while(Try < Steps){
+                Try++;
+                if(Idx > 2 && (double)std::abs(ReconstError[Idx]-ReconstError[Idx-1])/(ReconstError[Idx-1]) < _Threshold){
+                    break;
                 }
+                
                 ReconstError.push_back(cluster());
-                for(auto Val : ReconstError){
-                    std::cout << Val << " ";
-                }
-                std::cout << std::endl;
-                Gradient = (double)std::abs(ReconstError[Idx]-ReconstError[Idx-1])/(ReconstError[Idx-1]);
-                //std::cout << Idx << " " << Gradient << " " << ReconstError[Idx] << std::endl;
                 Idx++;
+                if(std::abs(mmatrix<T>::min(mmatrix<T>::max(_Assignments.transposition()))[0][0]) < 10e-4){
+                    while(std::abs(mmatrix<T>::min(mmatrix<T>::max(_Assignments.transposition()))[0][0]) > 10e-4){
+                        Idx = 1;
+                        ReconstError.clear();
+                        initialisation();
+                        ReconstError.push_back(cluster());
+                    }
+                }
+            }
 
-            }while(Idx < Steps && Gradient > _Threshold);
             return ReconstError;
         }
 

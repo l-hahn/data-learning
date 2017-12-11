@@ -1117,11 +1117,18 @@ template<typename T>
 std::string mmatrix<T>::to_string(char Delimiter, char Separator,  char Border){
     std::string MatStr;
     for(auto & Row : _Matrix){
-        MatStr += Border;
+        if(Border != 0){
+            MatStr += Border;
+        }
         for(auto & Sgn : Row){
             MatStr += std::to_string(Sgn) + Delimiter;
         }
-        MatStr[MatStr.size()-1] = Border;
+        if(Border  != 0){
+            MatStr[MatStr.size()-1] = Border;
+        }
+        else{
+            MatStr.pop_back();
+        }
         MatStr += Separator;
     }
     MatStr.pop_back();
