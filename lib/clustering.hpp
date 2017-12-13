@@ -35,7 +35,7 @@ namespace data_learning{
                 void threshold(T thresh);
 
                 double cluster();
-                std::vector<double> clustering(std::size_t Steps = 1e4);
+                std::vector<double> clustering(std::size_t Steps = 1e3);
 
                 mmatrix<T> data_matrix();
                 mmatrix<T> prototypes();
