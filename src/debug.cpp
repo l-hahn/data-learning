@@ -48,7 +48,7 @@ void debug_kmeans(){
     }
     Input.close();
 
-    K = 4;
+    K = 3;
     data_learning::clustering::kmeans<double> KMeans = data_learning::clustering::kmeans<double>(DataMat,K);
 
     std::ofstream Output("test-data/Cls_ErrDev.dat"); 

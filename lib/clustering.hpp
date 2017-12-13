@@ -34,8 +34,8 @@ namespace data_learning{
                 void data_matrix(mmatrix<T> & Mat);
                 void threshold(T thresh);
 
-                T cluster();
-                std::vector<T> clustering(std::size_t Steps = 1e4);
+                double cluster();
+                std::vector<double> clustering(std::size_t Steps = 1e4);
 
                 mmatrix<T> data_matrix();
                 mmatrix<T> prototypes();
@@ -117,8 +117,8 @@ namespace data_learning{
         }
 
         template<typename T>
-        T kmeans<T>::cluster(){
-            T ReconstError = T(0);
+        double kmeans<T>::cluster(){
+            double ReconstError = 0;
             for(std::size_t i = 0; i < _DataMatrix.row_size(); i++){
                 mmatrix<T> Assignment = mmatrix<T>::vector_norms(_Prototypes - _DataMatrix[i], mmatrix<T>::euclids);
                 _Assignments[i][std::max_element(_Assignments[i].begin(),_Assignments[i].end())-_Assignments[i].begin()] = T(0);
@@ -131,31 +131,38 @@ namespace data_learning{
                 
             }
             for(std::size_t i = 0; i < _DataMatrix.row_size(); i++){
-                ReconstError += (mmatrix<T>::vector_norms(_Prototypes - _DataMatrix[i],mmatrix<T>::euclids)*_Assignments[i])[0][0];
+                ReconstError += (double)(mmatrix<T>::vector_norms(_Prototypes - _DataMatrix[i],mmatrix<T>::euclids)*_Assignments[i])[0][0];
             }
             return ReconstError;
         }
         template<typename T>
-        std::vector<T> kmeans<T>::clustering(std::size_t Steps){
-            std::vector<T> ReconstError;
-            std::size_t Idx = 1, Try = 0;
+        std::vector<double> kmeans<T>::clustering(std::size_t Steps){
+            std::vector<double> ReconstError;
+            std::size_t Idx = 0, Try = 0;
+            double Gradient = 1, Diff = 1;
 
             while(Try < Steps){
-                Try++;
-                if(Idx > 2 && (double)std::abs(ReconstError[Idx]-ReconstError[Idx-1])/(ReconstError[Idx-1]) < _Threshold){
-                    break;
-                }
-                
                 ReconstError.push_back(cluster());
-                Idx++;
-                if(std::abs(mmatrix<T>::min(mmatrix<T>::max(_Assignments.transposition()))[0][0]) < 10e-4){
-                    while(std::abs(mmatrix<T>::min(mmatrix<T>::max(_Assignments.transposition()))[0][0]) > 10e-4){
-                        Idx = 1;
+                Try++, Idx++;
+                if(std::abs(mmatrix<T>::min(mmatrix<T>::max(_Assignments.transposition()))[0][0]) < 1e-10){
+                    while(std::abs(mmatrix<T>::min(mmatrix<T>::max(_Assignments.transposition()))[0][0]) < 1e-10){
                         ReconstError.clear();
                         initialisation();
                         ReconstError.push_back(cluster());
                     }
+                    Idx = 1;
+                    Gradient = 1;
                 }
+
+                if(Idx > 1){
+                    Gradient = std::fabs((ReconstError[Idx-2]-ReconstError[Idx-1])/(ReconstError[Idx-2]));
+                }
+                if(Idx > 2){
+                    Diff = std::fabs(ReconstError[Idx-1]-ReconstError[Idx-3]);
+                }
+                if(Gradient < _Threshold || std::fabs(ReconstError[Idx-1]) == 0 || Diff == 0 ){
+                    break;
+                }   
             }
 
             return ReconstError;
