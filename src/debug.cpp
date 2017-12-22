@@ -37,7 +37,7 @@ void debug_kmeans(){
     std::string Line;
     std::size_t K;
 
-    std::ifstream Input("test-data/small_cls.dat");
+    std::ifstream Input("test-data/Cluster.dat");
     if(Input.is_open()){
         while(std::getline(Input,Line)){
             if(Line.size() != 0){
@@ -48,7 +48,7 @@ void debug_kmeans(){
     }
     Input.close();
 
-    K = 2;
+    K = 4;
     data_learning::clustering::kmeans<double> KMeans = data_learning::clustering::kmeans<double>(DataMat,K);
 
     std::ofstream Output("test-data/Cls_ErrDev.dat"); 
@@ -74,7 +74,7 @@ void debug_pca(){
     std::vector<double> data;
     std::string Line;
 
-    std::ifstream Input("test-data/Hidden2.dat");
+    std::ifstream Input("test-data/Hidden1.dat");
     while(!Input.eof()){
         std::getline(Input,Line);
         data = split(Line, ' ');

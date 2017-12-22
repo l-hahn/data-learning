@@ -266,7 +266,7 @@ namespace data_learning{
 
       /*----------------------------------------------------------------------*/
         template<typename T = double>
-        class emalgo{
+        class emcluster{
 
         };
 
