@@ -76,6 +76,9 @@ namespace data_learning{
         template<typename T>
         std::vector< meigen<T> > pca<T>::eigen(std::size_t EigNumber, std::function<T(mmatrix<T>)> const& Norm){
             if(_Eigens.size() < EigNumber || EigNumber == 0){
+                if(EigNumber == 0){
+                    EigNumber = _DataMatrix.col_size();
+                }
                 calc_eigen(EigNumber, Norm);
             }
             return _Eigens;
@@ -84,6 +87,9 @@ namespace data_learning{
         template<typename T>
         mmatrix<T> pca<T>::eigen_spectrum(std::size_t EigNumber, bool normalise, std::function<T(mmatrix<T>)> const& Norm){
             if(_Eigens.size() < EigNumber || EigNumber == 0){
+                if(EigNumber == 0){
+                    EigNumber = _DataMatrix.col_size();
+                }
                 calc_eigen(EigNumber, Norm);
             }
             mmatrix<T> EigSpec = mmatrix<T>(1,EigNumber);
@@ -102,6 +108,9 @@ namespace data_learning{
         template<typename T>
         mmatrix<T> pca<T>::loadings(std::size_t LoadNumber, std::function<T(mmatrix<T>)> const& Norm){
             if(_Eigens.size() < LoadNumber || LoadNumber == 0){
+                if(LoadNumber == 0){
+                    LoadNumber = _DataMatrix.col_size();
+                }
                 calc_eigen(LoadNumber, Norm);
             }
             mmatrix<T> Loadings = mmatrix<T>();
@@ -120,6 +129,9 @@ namespace data_learning{
         template<typename T>
         mmatrix<T> pca<T>::principle_components(std::size_t CompNumber, std::function<T(mmatrix<T>)> const& Norm){
             if(_Eigens.size() < CompNumber || CompNumber == 0){
+                if(CompNumber == 0){
+                    CompNumber = _DataMatrix.col_size();
+                }
                 calc_eigen(CompNumber, Norm);
             }
             mmatrix<T> PrinComp = _DataMatrix*loadings().transposition();

@@ -21,9 +21,9 @@ void split(const std::string &s, char delim, std::vector<double> &elems);
 std::vector<double> split(const std::string &s, char delim);
 
 int main(){
-    debug_kmeans();
+    //debug_kmeans();
     //debug_matrix();
-    //debug_pca();
+    debug_pca();
     //debug_mds();
 
     return 0;
@@ -37,7 +37,7 @@ void debug_kmeans(){
     std::string Line;
     std::size_t K;
 
-    std::ifstream Input("test-data/Cluster.dat");
+    std::ifstream Input("data-test/Cluster.dat");
     if(Input.is_open()){
         while(std::getline(Input,Line)){
             if(Line.size() != 0){
@@ -51,14 +51,14 @@ void debug_kmeans(){
     K = 4;
     data_learning::clustering::kmeans<double> KMeans = data_learning::clustering::kmeans<double>(DataMat,K);
 
-    std::ofstream Output("test-data/Cls_ErrDev.dat"); 
+    std::ofstream Output("data-test/Cls_ErrDev.dat"); 
     std::vector<double> ErrDev = KMeans.clustering();
     for(std::size_t i = 0; i < ErrDev.size(); i++){
         Output << ErrDev[i] << std::endl;
     }
     Output.close();
 
-    Output = std::ofstream("test-data/clustered.dat"); 
+    Output = std::ofstream("data-test/clustered.dat"); 
     std::vector< mmatrix<double> > Clusters = KMeans.clusters();
     for(std::size_t i = 0; i < Clusters.size(); i++){
         Output << Clusters[i].to_string() << std::endl << std::endl;
@@ -74,7 +74,7 @@ void debug_pca(){
     std::vector<double> data;
     std::string Line;
 
-    std::ifstream Input("test-data/Hidden1.dat");
+    std::ifstream Input("data-test/Hidden.dat");
     while(!Input.eof()){
         std::getline(Input,Line);
         data = split(Line, ' ');
@@ -88,14 +88,14 @@ void debug_pca(){
 
     unsigned EigNumb = 2;
 
-    std::ofstream Output("test-data/EigenSpectum_PCA.dat"); 
+    std::ofstream Output("data-test/EigenSpectum_PCA.dat"); 
     EigSpec = PCA.eigen_spectrum();
     for(unsigned i = 0; i < EigSpec.col_size(); i++){
         Output << EigSpec[0][i] << std::endl;
     }
     Output.close();
 
-    Output = std::ofstream("test-data/PrincipleComponents_PCA.dat");
+    Output = std::ofstream("data-test/PrincipleComponents_PCA.dat");
     PrinComp = PCA.principle_components(EigNumb);
     for(unsigned i = 0; i < PrinComp.row_size(); i++){
         for(unsigned j = 0; j < PrinComp.col_size()-1; j++){
@@ -105,7 +105,7 @@ void debug_pca(){
     }
     Output.close();
 
-    Output = std::ofstream("test-data/Loadings_PCA.dat");
+    Output = std::ofstream("data-test/Loadings_PCA.dat");
     EigenVectors = PCA.loadings();
     for(unsigned i = 0; i < EigenVectors.row_size(); i++){
         for(unsigned j = 0; j < EigenVectors.col_size()-1; j++){
@@ -123,7 +123,7 @@ void debug_mds(){
     
     mmatrix<double>::thread(4);
 
-    std::ifstream Input("test-data/Hidden2.dat");
+    std::ifstream Input("data-test/Hidden.dat");
     while(!Input.eof()){
         std::getline(Input,Line);
         data = split(Line, ' ');
@@ -135,14 +135,14 @@ void debug_mds(){
 
     data_learning::mining::mds<double> MDS = data_learning::mining::mds<double>(DataMat);
 
-    std::ofstream Output("test-data/EigenSpectum_MDS.dat"); 
+    std::ofstream Output("data-test/EigenSpectum_MDS.dat"); 
     EigSpec = MDS.eigen_spectrum(2);
     for(unsigned i = 0; i < EigSpec.col_size(); i++){
         Output << EigSpec[0][i] << std::endl;
     }
     Output.close();
 
-    Output = std::ofstream("test-data/PrincipleComponents_MDS.dat");
+    Output = std::ofstream("data-test/PrincipleComponents_MDS.dat");
     PrinComp = MDS.principle_components(2);
     for(unsigned i = 0; i < PrinComp.row_size(); i++){
         for(unsigned j = 0; j < PrinComp.col_size()-1; j++){

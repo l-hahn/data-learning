@@ -1535,7 +1535,6 @@ std::vector< meigen<T> > mmatrix<T>::eigen(mmatrix<T> & Mat, std::size_t VecNo, 
         Eigens[i] = meigen<T>::power_iteration(EigenMat, Norm);
         EigenMat -= Eigens[i].vector().transposition()*Eigens[i].vector()*Eigens[i].value();
     }
-
     return Eigens;
 }
 

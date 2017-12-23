@@ -19,6 +19,7 @@ class meigen{
         static double _Threshold;
         static T _RMin;
         static T _RMax;
+        static std::size_t _MaxPowerVal;
         static bool _Seeded;
 
     public:
@@ -34,8 +35,10 @@ class meigen{
         static meigen<T> power_iteration(mmatrix<T> && SqrMatrix, mmatrix<T> && InitVector, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
         static meigen<T> power_iteration(mmatrix<T> & SqrMatrix, mmatrix<T> & InitVector, std::function<T(mmatrix<T>)> const& Norm = mmatrix<T>::euclid);
 
-        static void threshold(double thresh);
         static double threshold();
+        static void threshold(double thresh);
+        static std::size_t power_counter();
+        static void power_counter(std::size_t MaxCtr);
 };
 
 template<typename T>
@@ -44,6 +47,8 @@ template<typename T>
 T meigen<T>::_RMax = T(1000);
 template<typename T>
 T meigen<T>::_RMin = T(0);
+template<typename T>
+std::size_t meigen<T>::_MaxPowerVal = 1e5;
 template<typename T>
 bool meigen<T>::_Seeded = false;
 
@@ -116,24 +121,33 @@ meigen<T> meigen<T>::power_iteration(mmatrix<T> & SqrMatrix, mmatrix<T> & InitVe
     EigVec /= Norm(EigVec);
 
     double deg = std::acos((PreVec*EigVec.transposition())[0][0])*180.0 / M_PI;
-    while(deg > _Threshold){
+    std::size_t RoundCtr = 0;
+    while(deg > _Threshold && RoundCtr < _MaxPowerVal){
+        RoundCtr++;
         PreVec = EigVec;
         EigVec = PreVec * SqrMatrix;
         EigVec /= Norm(EigVec);
         deg = std::acos((PreVec*EigVec.transposition())[0][0])*180.0 / M_PI;
     }
     T EigVal = (EigVec * (SqrMatrix * EigVec.transposition()))[0][0];
-    
     return meigen(EigVec, EigVal);
 }
 
+template<typename T>
+double meigen<T>::threshold(){
+    return _Threshold;
+}
 template<typename T>
 void meigen<T>::threshold(double Thresh){
     _Threshold = Thresh;
 }
 template<typename T>
-double meigen<T>::threshold(){
-    return _Threshold;
+std::size_t meigen<T>::power_counter(){
+    return _MaxPowerVal;
+}
+template<typename T>
+void meigen<T>::power_counter(std::size_t MaxCtr){
+    _MaxPowerVal = MaxCtr;
 }
 
 #endif
