@@ -55,6 +55,249 @@ namespace data_learning{
                 void initialisation();
         };
 
+        
+
+
+      /*----------------------------------------------------------------------*/
+        template<typename T = double>
+        class emcluster{
+            private:
+                mmatrix<T> _DataMatrix;
+                mmatrix<T> _Prototypes;
+                mmatrix<T> _Assignments;
+                std::size_t _K;
+                double _Sigma;
+                double _SigmaInit;
+                static double _Threshold;
+
+            public:
+                emcluster(std::size_t K, double sigma = 1e-4);
+                emcluster(mmatrix<T> && Mat, std::size_t K, double sigma = 1e-4);
+                emcluster(mmatrix<T> & Mat, std::size_t K, double sigma = 1e-4);
+
+                void initial_prototypes(mmatrix<T> & Mat);
+                void data_matrix(mmatrix<T> && Mat);
+                void data_matrix(mmatrix<T> & Mat);
+                void threshold(T thresh);
+                void sigma(double sigma);
+
+                double cluster();
+                std::vector<double> clustering(std::size_t Steps = 1e3);
+
+                mmatrix<T> data_matrix();
+                mmatrix<T> prototypes();
+                mmatrix<T> assignments();
+                T threshold();
+                double sigma();
+                std::size_t k();
+
+                std::vector<std::size_t> labels();
+                std::vector< std::vector<std::size_t> > label_clusters();
+                std::vector< mmatrix<T> > clusters();
+
+                void reset();
+
+            private:
+                void init_kmeans();
+                void initialisation();
+        };
+
+        template<typename T>
+        double emcluster<T>::_Threshold = 1e-4;
+
+        template<typename T>
+        emcluster<T>::emcluster(std::size_t K, double sigma):_K(K),_Sigma(sigma),_SigmaInit(sigma){
+            if(_K < 2){
+                throw std::out_of_range("K, number of prototypes, has to be greater than 1.");
+            }
+            if(!clustering::_Seeded){
+                std::srand(std::time(NULL));
+                clustering::_Seeded = true;
+            }
+        }
+        template<typename T>
+        emcluster<T>::emcluster(mmatrix<T> && Mat, std::size_t K, double sigma):_K(K),_Sigma(sigma),_SigmaInit(sigma){
+            if(_K < 2){
+                throw std::out_of_range("K, number of prototypes, has to be greater than 1.");
+            }
+            if(!clustering::_Seeded){
+                std::srand(std::time(NULL));
+                clustering::_Seeded = true;
+            }
+            data_matrix(Mat);
+        }
+        template<typename T>
+        emcluster<T>::emcluster(mmatrix<T> & Mat, std::size_t K, double sigma):_K(K),_Sigma(sigma),_SigmaInit(sigma){
+            if(_K < 2){
+                throw std::out_of_range("K, number of prototypes, has to be greater than 1.");
+            }
+            if(!clustering::_Seeded){
+                std::srand(std::time(NULL));
+                clustering::_Seeded = true;
+            }
+            data_matrix(Mat);
+        }
+
+        template<typename T>
+        void emcluster<T>::initial_prototypes(mmatrix<T> & Mat){
+            if(Mat.row_size() != _K){
+                throw std::out_of_range("Initial prototypes row size("+std::to_string(Mat.row_size())+") differs from number K("+std::to_string(_K)+")");
+            }
+            if(Mat.col_size() != _DataMatrix.col_size() && _DataMatrix.col_size() != 0){
+                throw std::out_of_range("initial prototypes col size("+std::to_string(Mat.col_size())+") differs from data col size ("+std::to_string(_DataMatrix.col_size())+").");
+            }
+            _Prototypes = Mat;
+            initialisation();
+        }
+        template<typename T>
+        void emcluster<T>::data_matrix(mmatrix<T> && Mat){
+            data_matrix(Mat);
+        }
+        template<typename T>
+        void emcluster<T>::data_matrix(mmatrix<T> & Mat){
+            _DataMatrix = Mat;
+            init_kmeans();
+        }
+        template<typename T>
+        void emcluster<T>::threshold(T thresh){
+            _Threshold = thresh;
+        }
+        template<typename T>
+        void emcluster<T>::sigma(double sigma){
+            _Sigma = sigma;
+            _SigmaInit = sigma;
+        }
+
+        template<typename T>
+        double emcluster<T>::cluster(){
+            //TODO
+        }
+        template<typename T>
+        std::vector<double> emcluster<T>::clustering(std::size_t Steps){
+            std::vector<double> ReconstError;
+
+            ReconstError.push_back(cluster());
+
+            for(std::size_t i = 1; i < Steps; i++){
+                ReconstError.push_back(cluster());
+                if(((ReconstError[i-1]-ReconstError[i])/ReconstError[i-1]) < _Threshold){
+                    break;
+                }                
+            }
+
+            return ReconstError;
+        }
+
+        template<typename T>
+        mmatrix<T> emcluster<T>::data_matrix(){
+            return _DataMatrix;
+        }
+        template<typename T>
+        mmatrix<T> emcluster<T>::prototypes(){
+            return _Prototypes;
+        }
+        template<typename T>
+        mmatrix<T> emcluster<T>::assignments(){
+            return _Assignments;
+        }
+        template<typename T>
+        T emcluster<T>::threshold(){
+            return _Threshold;
+        }
+        template<typename T>
+        double emcluster<T>sigma(){
+            return _Sigma;
+        }
+        template<typename T>
+        std::size_t emcluster<T>::k(){
+            return _K;
+        }
+
+        template<typename T>
+        std::vector<std::size_t> emcluster<T>::labels(){
+            std::vector<std::size_t> Labels(_Assignments.row_size());
+            for(std::size_t i = 0; i < _Assignments; i++){
+                Labels[i] = std::max_element(_Assignments[i].begin(),_Assignments[i].end())-_Assignments[i].begin();
+            }
+            return labels;
+        }
+        template<typename T>
+        std::vector< std::vector<std::size_t> > emcluster<T>::label_clusters(){
+            std::vector< std::vector<std::size_t> > Clusters(_K);
+            for(std::size_t i = 0; i < _Assignments.row_size(); i++){
+                Clusters[(std::max_element(_Assignments[i].begin(),_Assignments[i].end())-_Assignments[i].begin())].push_back(i);
+            }
+            return Clusters;
+        }
+        template<typename T>
+        std::vector< mmatrix<T> > emcluster<T>::clusters(){
+            std::vector< mmatrix<T> > Clusters(_K);
+            std::vector< std::vector<std::size_t> > cluster_label = label_clusters();
+            for(std::size_t i = 0; i < _K; i++){
+                Clusters[i].push_back(_Prototypes[i]);
+                for(std::size_t j = 0; j < cluster_label[i].size(); j++){
+                    Clusters[i].push_back(_DataMatrix[cluster_label[i][j]]);
+                }
+            }
+            return Clusters;
+        }
+
+        template<typename T>
+        void emcluster<T>::reset(){
+            _Sigma = _SigmaInit;
+            init_kmeans();
+        }
+
+        template<typename T>
+        void emcluster<T>::init_kmeans(){
+            kmeans tmp_cluster(_DataMatrix,K);
+            tmp_cluster.clustering();
+            _Prototypes = tmp_cluster.prototypes();
+            _Assignments = tmp_cluster.assignments();
+        }
+        template<typename T>
+        void emcluster<T>::initialisation(){
+            if(_Prototypes.row_size() != _K){
+                throw std::out_of_range("Initial prototypes row size("+std::to_string(Mat.row_size())+") differs from number K("+std::to_string(_K)+")");
+            }
+            if(_Prototypes.row_size() != _DataMatrix.col_size() && _DataMatrix.col_size() != 0){
+                throw std::out_of_range("initial prototypes col size("+std::to_string(Mat.col_size())+") differs from data col size ("+std::to_string(_DataMatrix.col_size())+").");
+            }
+            //TODO
+        }
+
+
+      /*----------------------------------------------------------------------*/
+        template<typename T = double>
+        class tvq{
+
+        };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         template<typename T>
         double kmeans<T>::_Threshold = 1e-4;
 
@@ -255,7 +498,6 @@ namespace data_learning{
 
         template<typename T>
         void kmeans<T>::initialisation(){
-            std::string tmp;
             do{
                 _Assignments = mmatrix<T>(_DataMatrix.row_size(), _K);
                 _Prototypes = initial_proto();
@@ -264,18 +506,10 @@ namespace data_learning{
         }
 
 
-      /*----------------------------------------------------------------------*/
-        template<typename T = double>
-        class emcluster{
-
-        };
 
 
-      /*----------------------------------------------------------------------*/
-        template<typename T = double>
-        class tvq{
 
-        };
+
     };
 };
 #endif
