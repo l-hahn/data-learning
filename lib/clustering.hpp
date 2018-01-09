@@ -102,7 +102,7 @@ namespace data_learning{
                 void initialisation();
         };
 
-        template<typename T>
+ /*       template<typename T>
         double emcluster<T>::_Threshold = 1e-4;
 
         template<typename T>
@@ -265,7 +265,7 @@ namespace data_learning{
             }
             //TODO
         }
-
+*/
 
       /*----------------------------------------------------------------------*/
         template<typename T = double>

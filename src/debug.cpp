@@ -74,7 +74,7 @@ void debug_pca(){
     std::vector<double> data;
     std::string Line;
 
-    std::ifstream Input("data-test/Hidden.dat");
+    std::ifstream Input("data-test/Hidden1.dat");
     while(!Input.eof()){
         std::getline(Input,Line);
         data = split(Line, ' ');
@@ -84,9 +84,10 @@ void debug_pca(){
     }
     Input.close();
     
+    
     data_learning::mining::pca<double> PCA = data_learning::mining::pca<double>(DataMat);
 
-    unsigned EigNumb = 2;
+    unsigned EigNumb = 10;
 
     std::ofstream Output("data-test/EigenSpectum_PCA.dat"); 
     EigSpec = PCA.eigen_spectrum();
