@@ -14,7 +14,7 @@ namespace data_learning{
   /*---clustering-------------------------------------------------------------*/
     namespace clustering{
         static bool _Seeded = false;
-        
+      /*---KMeans-Clutering---------------------------------------------------*/
         template<typename T = double>
         class kmeans{
             private:
@@ -58,13 +58,14 @@ namespace data_learning{
         
 
 
-      /*----------------------------------------------------------------------*/
+      /*---Expectation-Maximisation-Clustering--------------------------------*/
         template<typename T = double>
         class emcluster{
             private:
                 mmatrix<T> _DataMatrix;
                 mmatrix<T> _Prototypes;
                 mmatrix<T> _Assignments;
+                mmatrix<T> _ClusterProb;
                 std::size_t _K;
                 double _Sigma;
                 double _SigmaInit;
@@ -78,6 +79,8 @@ namespace data_learning{
                 void initial_prototypes(mmatrix<T> & Mat);
                 void data_matrix(mmatrix<T> && Mat);
                 void data_matrix(mmatrix<T> & Mat);
+                void probability_matrix(mmatrix<T> && Mat);
+                void probability_matrix(mmatrix<T> & Mat);
                 void threshold(T thresh);
                 void sigma(double sigma);
 
@@ -87,6 +90,7 @@ namespace data_learning{
                 mmatrix<T> data_matrix();
                 mmatrix<T> prototypes();
                 mmatrix<T> assignments();
+                mmatrix<T> probability_matrix();
                 T threshold();
                 double sigma();
                 std::size_t k();
@@ -102,7 +106,7 @@ namespace data_learning{
                 void initialisation();
         };
 
- /*       template<typename T>
+        template<typename T>
         double emcluster<T>::_Threshold = 1e-4;
 
         template<typename T>
@@ -141,10 +145,14 @@ namespace data_learning{
         template<typename T>
         void emcluster<T>::initial_prototypes(mmatrix<T> & Mat){
             if(Mat.row_size() != _K){
-                throw std::out_of_range("Initial prototypes row size("+std::to_string(Mat.row_size())+") differs from number K("+std::to_string(_K)+")");
+                throw std::out_of_range("Initial prototypes row size("+
+                std::to_string(Mat.row_size())+") differs from number K("+
+                std::to_string(_K)+")");
             }
             if(Mat.col_size() != _DataMatrix.col_size() && _DataMatrix.col_size() != 0){
-                throw std::out_of_range("initial prototypes col size("+std::to_string(Mat.col_size())+") differs from data col size ("+std::to_string(_DataMatrix.col_size())+").");
+                throw std::out_of_range("initial prototypes col size("+
+                std::to_string(Mat.col_size())+") differs from data col size ("+
+                std::to_string(_DataMatrix.col_size())+").");
             }
             _Prototypes = Mat;
             initialisation();
@@ -159,6 +167,15 @@ namespace data_learning{
             init_kmeans();
         }
         template<typename T>
+        void emcluster<T>::probability_matrix(mmatrix<T> && Mat){
+            probability_matrix(Mat);
+        }
+        template<typename T>
+        void emcluster<T>::probability_matrix(mmatrix<T> & Mat){
+            _ClusterProb = Mat;
+            initialisation();
+        }
+        template<typename T>
         void emcluster<T>::threshold(T thresh){
             _Threshold = thresh;
         }
@@ -170,7 +187,17 @@ namespace data_learning{
 
         template<typename T>
         double emcluster<T>::cluster(){
-            //TODO
+            
+            _ClusterProb = mmatrix<T>::sum(_Assignments.transposition())/(T)_DataMatrix.row_size();
+            for(std::size_t i = 0; i < _K; i++){
+                mmatrix<T> NewProto = _DataMatrix.vec_entry_mult(_Assignments.transposition()[i]);
+                _Prototypes[i] = (mmatrix<T>::sum(NewProto.transposition())/mmatrix<T>::sum(_Assignments.transposition()[i])[0][0])[0];
+            }
+            double NewSigma = 0;
+            for(std::size_t i = 0; i < _DataMatrix.row_size(); i++){
+                NewSigma += (double)(mmatrix<T>::vector_norms(_Prototypes - _DataMatrix[i],mmatrix<T>::euclids)*_Assignments[i])[0][0];
+            }
+            _Sigma = NewSigma/(_DataMatrix.row_size()*_DataMatrix.col_size());
         }
         template<typename T>
         std::vector<double> emcluster<T>::clustering(std::size_t Steps){
@@ -201,11 +228,15 @@ namespace data_learning{
             return _Assignments;
         }
         template<typename T>
+        mmatrix<T> emcluster<T>::probability_matrix(){
+            return _ClusterProb;
+        }
+        template<typename T>
         T emcluster<T>::threshold(){
             return _Threshold;
         }
         template<typename T>
-        double emcluster<T>sigma(){
+        double emcluster<T>::sigma(){
             return _Sigma;
         }
         template<typename T>
@@ -217,7 +248,8 @@ namespace data_learning{
         std::vector<std::size_t> emcluster<T>::labels(){
             std::vector<std::size_t> Labels(_Assignments.row_size());
             for(std::size_t i = 0; i < _Assignments; i++){
-                Labels[i] = std::max_element(_Assignments[i].begin(),_Assignments[i].end())-_Assignments[i].begin();
+                Labels[i] = std::max_element(_Assignments[i].begin(),
+                    _Assignments[i].end())-_Assignments[i].begin();
             }
             return labels;
         }
@@ -225,7 +257,8 @@ namespace data_learning{
         std::vector< std::vector<std::size_t> > emcluster<T>::label_clusters(){
             std::vector< std::vector<std::size_t> > Clusters(_K);
             for(std::size_t i = 0; i < _Assignments.row_size(); i++){
-                Clusters[(std::max_element(_Assignments[i].begin(),_Assignments[i].end())-_Assignments[i].begin())].push_back(i);
+                Clusters[(std::max_element(_Assignments[i].begin(),
+                    _Assignments[i].end())-_Assignments[i].begin())].push_back(i);
             }
             return Clusters;
         }
@@ -250,7 +283,7 @@ namespace data_learning{
 
         template<typename T>
         void emcluster<T>::init_kmeans(){
-            kmeans tmp_cluster(_DataMatrix,K);
+            kmeans<T> tmp_cluster(_DataMatrix,_K);
             tmp_cluster.clustering();
             _Prototypes = tmp_cluster.prototypes();
             _Assignments = tmp_cluster.assignments();
@@ -258,16 +291,37 @@ namespace data_learning{
         template<typename T>
         void emcluster<T>::initialisation(){
             if(_Prototypes.row_size() != _K){
-                throw std::out_of_range("Initial prototypes row size("+std::to_string(Mat.row_size())+") differs from number K("+std::to_string(_K)+")");
+                throw std::out_of_range("Initial prototypes row size("+
+                    std::to_string(_Prototypes.row_size())+
+                    ") differs from number K("+std::to_string(_K)+")");
             }
             if(_Prototypes.row_size() != _DataMatrix.col_size() && _DataMatrix.col_size() != 0){
-                throw std::out_of_range("initial prototypes col size("+std::to_string(Mat.col_size())+") differs from data col size ("+std::to_string(_DataMatrix.col_size())+").");
+                throw std::out_of_range("initial prototypes col size("+
+                    std::to_string(_Prototypes.col_size())+
+                    ") differs from data col size ("+
+                    std::to_string(_DataMatrix.col_size())+").");
             }
-            //TODO
+            if(_ClusterProb.row_size() == _K){
+                _ClusterProb.transpose();
+            }
+            if(_ClusterProb.col_size() != _K){
+                throw std::out_of_range("Initial probabilities col size("+
+                    std::to_string(_ClusterProb.col_size())+
+                    ") differs from number K("+std::to_string(_K)+")");
+            }
         }
-*/
 
-      /*----------------------------------------------------------------------*/
+
+
+
+
+
+
+
+
+
+
+      /*---Topograpic-Vector-Quantorisation-----------------------------------*/
         template<typename T = double>
         class tvq{
 
@@ -283,21 +337,7 @@ namespace data_learning{
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      /*---KMeans-------------------------------------------------------------*/ 
         template<typename T>
         double kmeans<T>::_Threshold = 1e-4;
 
@@ -337,10 +377,14 @@ namespace data_learning{
         template<typename T>
         void kmeans<T>::initial_prototypes(mmatrix<T> & Mat){
             if(Mat.row_size() != _K){
-                throw std::out_of_range("Initial prototypes row size("+std::to_string(Mat.row_size())+") differs from number K("+std::to_string(_K)+")");
+                throw std::out_of_range("Initial prototypes row size("+
+                    std::to_string(Mat.row_size())+") differs from number K("+
+                    std::to_string(_K)+")");
             }
             if(Mat.col_size() != _DataMatrix.col_size() && _DataMatrix.col_size() != 0){
-                throw std::out_of_range("initial prototypes col size("+std::to_string(Mat.col_size())+") differs from data col size ("+std::to_string(_DataMatrix.col_size())+").");
+                throw std::out_of_range("initial prototypes col size("+
+                std::to_string(Mat.col_size())+") differs from data col size ("+
+                std::to_string(_DataMatrix.col_size())+").");
             }
             _Prototypes = Mat;
             initial_assign();
@@ -371,12 +415,11 @@ namespace data_learning{
             for(std::size_t i = 0; i < _K; i++){
                 mmatrix<T> NewProto = _DataMatrix.vec_entry_mult(_Assignments.transposition()[i]);
                 _Prototypes[i] = (mmatrix<T>::sum(NewProto.transposition())/mmatrix<T>::sum(_Assignments.transposition()[i])[0][0])[0];
-                
             }
             for(std::size_t i = 0; i < _DataMatrix.row_size(); i++){
                 ReconstError += (double)(mmatrix<T>::vector_norms(_Prototypes - _DataMatrix[i],mmatrix<T>::euclids)*_Assignments[i])[0][0];
             }
-            return ReconstError;
+            return ReconstError*_DataMatrix.row_size();
         }
         template<typename T>
         std::vector<double> kmeans<T>::clustering(std::size_t Steps){
@@ -504,12 +547,6 @@ namespace data_learning{
                 initial_assign();
             }while(std::abs(mmatrix<T>::min(mmatrix<T>::max(_Assignments.transposition()))[0][0]) <1e-10);
         }
-
-
-
-
-
-
     };
 };
 #endif

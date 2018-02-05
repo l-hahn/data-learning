@@ -1281,7 +1281,7 @@ mmatrix<T> mmatrix<T>::sum(mmatrix<T> && Mat){
 template<typename T>
 mmatrix<T> mmatrix<T>::sum(mmatrix<T> & Mat){
     if(Mat.row_size() == 0 || Mat.row_size() == 0){
-        throw std::out_of_range("sum: column and row factor has to be non-zero.");
+        throw std::out_of_range("sum: column and row count has to be non-zero.");
     }
     mmatrix<T> Sum(1,Mat.row_size());
     T * Vec = &Sum[0].front();

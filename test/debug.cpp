@@ -5,10 +5,10 @@
 #include <sstream>
 #include <omp.h>
 
-#include "../lib/mmatrix.hpp"
-#include "../lib/mining.hpp"
-#include "../lib/learning.hpp"
-#include "../lib/clustering.hpp"
+#include "../src/mmatrix.hpp"
+#include "../src/mining.hpp"
+#include "../src/learning.hpp"
+#include "../src/clustering.hpp"
 
 void debug_kmeans();
 
