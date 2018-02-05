@@ -1179,7 +1179,7 @@ template<typename T>
 mmatrix<T> mmatrix<T>::repmat(mmatrix<T> & Mat, std::size_t Row, std::size_t Col){
     mmatrix<T> RepMat(Mat);
     if(Row == 0 || Col == 0){
-        throw std::out_of_range("repmat: column and row factor has to be non-zero.");
+        throw std::out_of_range("repmat: column and row count has to be non-zero.");
     }
     RepMat._Dimensions = mdimension(Mat._Dimensions.Row*Row,Mat._Dimensions.Col*Col);
 
@@ -1234,7 +1234,7 @@ mmatrix<T> mmatrix<T>::max(mmatrix<T> && Mat){
 template<typename T>
 mmatrix<T> mmatrix<T>::max(mmatrix<T> & Mat){
     if(Mat.row_size() == 0 || Mat.row_size() == 0){
-        throw std::out_of_range("max: column and row factor has to be non-zero.");
+        throw std::out_of_range("max: column and row count has to be non-zero.");
     }
     mmatrix<T> Max(1,Mat.row_size());
     #ifdef _OPENMP
@@ -1257,16 +1257,16 @@ mmatrix<T> mmatrix<T>::min(mmatrix<T> && Mat){
 template<typename T>
 mmatrix<T> mmatrix<T>::min(mmatrix<T> & Mat){
     if(Mat.row_size() == 0 || Mat.row_size() == 0){
-        throw std::out_of_range("min: column and row factor has to be non-zero.");
+        throw std::out_of_range("min: column and row count has to be non-zero.");
     }
-    mmatrix<T> Min(Mat.row_size(),1);
+    mmatrix<T> Min(1,Mat.row_size());
     #ifdef _OPENMP
     #pragma omp parallel
     {
         #pragma omp for
     #endif
         for(std::size_t i = 0; i < Mat.row_size(); i++){
-            Min[i][0] = *std::min_element(Mat[i].begin(),Mat[i].end());
+            Min[0][i] = *std::min_element(Mat[i].begin(),Mat[i].end());
         }
     #ifdef _OPENMP
     }

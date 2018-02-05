@@ -187,13 +187,19 @@ namespace data_learning{
 
         template<typename T>
         double emcluster<T>::cluster(){
+            double NewSigma = 1.0/(2.0*_Sigma);
+            for(std::size_t i = 0; i < _DataMatrix.row_size(); i++){
+                mmatrix<T> DataProtoDist = mmatrix<T>::vector_norms(_Prototypes - _DataMatrix[i],mmatrix<T>::euclids).transpose()*NewSigma;
+                DataProtoDist -= mmatrix<T>::min(DataProtoDist);
+                //Final Step: _Assignment(i,:) =  exp(DataProtoDist * Pj*-1)/sum(Pj*DataProtoDist*-1)[0][0]
+            }
             
             _ClusterProb = mmatrix<T>::sum(_Assignments.transposition())/(T)_DataMatrix.row_size();
             for(std::size_t i = 0; i < _K; i++){
                 mmatrix<T> NewProto = _DataMatrix.vec_entry_mult(_Assignments.transposition()[i]);
                 _Prototypes[i] = (mmatrix<T>::sum(NewProto.transposition())/mmatrix<T>::sum(_Assignments.transposition()[i])[0][0])[0];
             }
-            double NewSigma = 0;
+            NewSigma = 0;
             for(std::size_t i = 0; i < _DataMatrix.row_size(); i++){
                 NewSigma += (double)(mmatrix<T>::vector_norms(_Prototypes - _DataMatrix[i],mmatrix<T>::euclids)*_Assignments[i])[0][0];
             }
