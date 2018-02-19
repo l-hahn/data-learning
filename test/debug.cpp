@@ -1,3 +1,4 @@
+/*===Libraries================================================================*/
 #include <iostream>
 #include <vector>
 #include <fstream>
@@ -10,16 +11,21 @@
 #include "../src/learning.hpp"
 #include "../src/clustering.hpp"
 
-void debug_kmeans();
+/*===Classes-Structurres======================================================*/
 
+/*===Variables================================================================*/
+
+/*===Prototypes===============================================================*/
+void debug_kmeans();
 void debug_pca();
 void debug_mds();
-
 void debug_matrix();
 
 void split(const std::string &s, char delim, std::vector<double> &elems);
 std::vector<double> split(const std::string &s, char delim);
 
+
+/*===Main=====================================================================*/
 int main(){
     debug_kmeans();
     //debug_matrix();

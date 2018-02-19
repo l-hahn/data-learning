@@ -1,6 +1,7 @@
 #ifndef _MEIGEN_HPP_
 #define _MEIGEN_HPP_
 
+/*===Libraries================================================================*/
 #define _USE_MATH_DEFINES
 #include <cmath>
 
@@ -8,6 +9,7 @@
 #include <cstdlib>
 #include <ctime>
 
+/*===Classes-Structurres======================================================*/
 template<typename T>
 class mmatrix;
 
@@ -41,6 +43,7 @@ class meigen{
         static void power_counter(std::size_t MaxCtr);
 };
 
+/*===Variables================================================================*/
 template<typename T>
 double meigen<T>::_Threshold = 1e-4;
 template<typename T>
@@ -52,6 +55,10 @@ std::size_t meigen<T>::_MaxPowerVal = 1e5;
 template<typename T>
 bool meigen<T>::_Seeded = false;
 
+
+/*===Prototypes===============================================================*/
+
+/*===Main=====================================================================*/
 template<typename T>
 meigen<T>::meigen(){
     if(!_Seeded){

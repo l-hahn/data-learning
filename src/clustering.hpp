@@ -1,6 +1,7 @@
 #ifndef _CLUSTERING_HPP_
 #define _CLUSTERING_HPP_
 
+/*===Libraries================================================================*/
 #include <algorithm>
 #include <ctime>
 #include <stdexcept>
@@ -10,6 +11,7 @@
 
 #include "mmatrix.hpp"
 
+/*===Classes-Structurres======================================================*/
 namespace data_learning{
   /*---clustering-------------------------------------------------------------*/
     namespace clustering{
@@ -555,4 +557,11 @@ namespace data_learning{
         }
     };
 };
+
+/*===Variables================================================================*/
+
+/*===Prototypes===============================================================*/
+
+/*===Main=====================================================================*/
+
 #endif

@@ -24,15 +24,15 @@ def point_to_string(Point):
 
 #---MAIN-----------------------------------------------------------------------#
 
-nData = 5000
+nData = 1000
 nDim = 2
-sigma = 0.25
+sigma = 7
 Data = []
 
-Data.extend(random_data(nData,nDim,[0,0],sigma))
-Data.extend(random_data(nData,nDim,[0,1],sigma))
-Data.extend(random_data(nData,nDim,[1,0],sigma))
-Data.extend(random_data(nData,nDim,[1,1],sigma))
+Data.extend(random_data(nData,nDim,[165,60],sigma))
+#Data.extend(random_data(nData,nDim,[0,1],sigma))
+#Data.extend(random_data(nData,nDim,[1,0],sigma))
+Data.extend(random_data(nData,nDim,[185,80],sigma))
 
 File = open("Cluster.dat","w")
 for Point in Data:

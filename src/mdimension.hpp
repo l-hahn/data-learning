@@ -1,6 +1,7 @@
 #ifndef _MDIMENSION_HPP_
 #define _MDIMENSION_HPP_
 
+/*===Libraries================================================================*/
 #include <iostream>
 #include <cstdlib>
 #include <stdexcept>
@@ -8,6 +9,7 @@
 
 #include "mdimension.hpp"
 
+/*===Classes-Structurres======================================================*/
 class mdimension{
     public:
         // size(Mat) == _Row x _Col
@@ -39,6 +41,12 @@ class mdimension{
         mdimension& operator*=(const mdimension & DimL);
 };
 
+
+/*===Variables================================================================*/
+
+/*===Prototypes===============================================================*/
+
+/*===Main=====================================================================*/
 mdimension::mdimension():Row(0),Col(0){
 }
 mdimension::mdimension(std::size_t Size):Row(Size),Col(Size){

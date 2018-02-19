@@ -1,6 +1,7 @@
 #ifndef _MMATRIX_HPP_
 #define _MMATRIX_HPP_
 
+/*===Libraries================================================================*/
 #include <algorithm>
 #include <cstdlib>
 #include <functional>
@@ -15,7 +16,7 @@
 #include "mdimension.hpp"
 #include "meigen.hpp" 
 
-
+/*===Classes-Structurres======================================================*/
 template<typename T = double>
 class mmatrix{
     private:
@@ -26,8 +27,8 @@ class mmatrix{
     public:
         mmatrix();
         mmatrix(size_t Row, size_t Col, T Val=T());
-        mmatrix(const mdimension & Dim, T Val=T());
         mmatrix(const mdimension && Dim, T Val=T());
+        mmatrix(const mdimension & Dim, T Val=T());
         mmatrix(const mmatrix<T> && Mat);
         mmatrix(const mmatrix<T> & Mat);
         mmatrix(const std::vector<T> && Mat);
@@ -63,7 +64,6 @@ class mmatrix{
         void reserve(const mdimension & Dim);
 
         void clear() noexcept;
-
 
         std::vector<T>& operator[](size_t Idx);
 
@@ -199,7 +199,11 @@ class mmatrix{
         static T l_p_norm(std::vector<T> & Matrix, std::size_t Norm);
 };
 
+/*===Variables================================================================*/
 
+/*===Prototypes===============================================================*/
+
+/*===Main=====================================================================*/
 template<typename T>
 mmatrix<T>::mmatrix(){
     _Dimensions = mdimension(0);
@@ -1691,4 +1695,5 @@ template<typename T>
 std::size_t mmatrix<T>::thread(){
     return threadNumber;
 }
+
 #endif
