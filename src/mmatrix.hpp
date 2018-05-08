@@ -747,7 +747,7 @@ mmatrix<T>& mmatrix<T>::operator*=(mmatrix<T> & Mat){
 
     std::vector<T> * RowsL = &front();
     std::vector<T> * RowsR = &Mat.front();
-    std::vector<T> * NewRows = &front();
+    std::vector<T> * NewRows = &NewMat.front();
     std::vector<T*> Columns(Mat._Matrix.size());
     T **ValsR = &Columns.front();
 
@@ -763,6 +763,7 @@ mmatrix<T>& mmatrix<T>::operator*=(mmatrix<T> & Mat){
             T * ValsL = &RowsL[i].front();
             T * Vals = &NewRows[i].front();
             for(std::size_t j = 0; j < _Dimensions.Col; j++){
+                Vals[j] = 0;
                 for(std::size_t k = 0; k < Columns.size(); k++){
                     Vals[j] += ValsL[k] * ValsR[k][j];
                 }
