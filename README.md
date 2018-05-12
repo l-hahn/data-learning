@@ -4,10 +4,10 @@ Approach for implementing a library concerning data mining (PCA, MDS, etc.), mac
 In lib-folder, all necessary code files can be found. Using $ ~ make , you can compile the test file from the src-folder.
 
 Important is to include mmatrix.hpp, the "mathematical matrix" class and clustering, mining or learning.
-All functions are defined within the scope data_learning::<category>::<class>, e.g. data_learning::clustering::kmeans
+All functions are defined within the scope data_learning::< category >::< class >, e.g. data_learning::clustering::kmeans
 
-This personal project is developed in freetime, so at some points there will be many changes, but at some other points in the future, there wont be changes within a few days.
-Final design, including this Readma, will be estimated with summer 2018!
+This personal project is being developed in freetime, so at some points there will be many changes, but at some other points in the future, there wont be changes within a few days.
+Final design, including this ReadMe, will be estimated with winter 2018!
 
 If there are questions, please feel free to contact me:
   lhahn@data-learning.de
