@@ -783,7 +783,6 @@ template<typename T>
 mmatrix<T>& mmatrix<T>::operator*=(std::vector<T> & Mat){
     mmatrix<T> NewMat;
     NewMat.push_back(Mat);
-    NewMat.transpose();
     return operator*=(NewMat);
 }
 template<typename T>
@@ -871,7 +870,6 @@ template<typename T>
 mmatrix<T> mmatrix<T>::operator*(std::vector<T> & Mat){
     mmatrix<T> NewMat;
     NewMat.push_back(Mat);
-    NewMat.transpose();
     return operator*(NewMat);
 }
 template<typename T>
@@ -1077,7 +1075,7 @@ mmatrix<T> mmatrix<T>::vec_entry_mult(std::vector<T> & Mat){
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
             for(std::size_t j = 0; j < _Dimensions.Col; j++){
-                ValsL[j] *= ValsR[i];
+                ValsL[j] *= ValsR[j];
             }
         }
     #ifdef _OPENMP
@@ -1109,7 +1107,7 @@ mmatrix<T>& mmatrix<T>::equal_vec_entry_mult(std::vector<T> & Mat){
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
             for(std::size_t j = 0; j < _Dimensions.Col; j++){
-                ValsL[j] *= ValsR[i];
+                ValsL[j] *= ValsR[j];
             }
         }
     #ifdef _OPENMP
@@ -1136,7 +1134,9 @@ std::string mmatrix<T>::to_string(char Delimiter, char Separator,  char Border){
         }
         MatStr += Separator;
     }
-    MatStr.pop_back();
+    if(MatStr.size() > 0){
+        MatStr.pop_back();
+    }
     return MatStr;
 }
 
