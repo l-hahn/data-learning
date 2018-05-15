@@ -22,6 +22,7 @@ void thread();
 
 /*===Main=====================================================================*/
 int main(){
+    mmatrix<double>::thread(omp_get_max_threads());
     constructors();
     memory();
     push_back();
@@ -268,7 +269,57 @@ void operators(){
 }
 
 void static_operations(){
+    std::cout << std::endl << std::string(80,'#') << std::endl;
+    std::cout << "#\t\tE) Static Matrix Operations\t\t\t\t       #" << std::endl;
+    std::cout << std::string(80,'#') << std::endl << "Reset\n" << std::endl;
 
+    mmatrix<double> MatrixHc = {{1,2,3},{4,5,6},{7,8,9}};
+    mmatrix<double> MatrixVec = {1,2,3};
+    mmatrix<double> MatrixCopy(MatrixVec);
+
+    std::function<double (double)> function;
+    std::function<mmatrix<double> (mmatrix<double>)> mat_function;
+
+    std::cout << "MatrixHc: \n" << MatrixHc.to_string() << std::endl << std::endl;    
+    std::cout << "MatrixVec: \n" << MatrixVec.to_string() << std::endl << std::endl;    
+    std::cout << "MatrixCopy: \n" << MatrixCopy.to_string() << std::endl << std::endl;    
+
+
+    MatrixCopy = mmatrix<double>::repmat(MatrixCopy,3,1);
+    std::cout << "MatrixCopy = mmatrix::repmat(MatrixCopy,3,1): \n" << MatrixCopy.to_string() << std::endl << std::endl;
+    MatrixCopy = mmatrix<double>::repmat(mmatrix<double>(MatrixCopy),3,3);
+    std::cout << "MatrixCopy = mmatrix::repmat(MatrixCopy,3,1): \n" << MatrixCopy.to_string() << std::endl << std::endl;
+    function = [](double Val){return Val*Val;};
+    mmatrix<double>::transform(MatrixHc, function);
+    std::cout << "std::function<T (T)> function = [](double Val){return Val*Val}" << std::endl;
+    std::cout << "mmatrix::transform(MatrixHc, function): \n" << MatrixHc.to_string() << std::endl << std::endl;
+    mat_function = [](mmatrix<double> Mat){
+        for(auto iter = Mat.begin(); iter != Mat.end(); iter++){
+            for(auto jter = iter->begin(); jter != iter->end(); jter++){
+                *jter = sqrt(*jter);
+            }
+        }
+        return Mat;
+    };
+    mmatrix<double>::transform(MatrixHc,mat_function);
+    std::cout << "std::function<T (T)> mat_function = [](mmatrix<double> Val){...sqrt for each value...}" << std::endl;
+    std::cout << "mmatrix::transform(MatrixHc, mat_function): \n" << MatrixHc.to_string() << std::endl << std::endl;
+    mmatrix<double>::transform(MatrixHc.begin(),MatrixHc.end(),function);
+    std::cout << "mmatrix::transform(MatrixHc.begin(),MatrixHc.end(), function): \n" << MatrixHc.to_string() << std::endl << std::endl;
+    std::cout << "mmatrix::max(MatrixHc): \n" << mmatrix<double>::max(MatrixHc) << std::endl << std::endl;
+    std::cout << "mmatrix::min(MatrixHc): \n" << mmatrix<double>::min(MatrixHc) << std::endl << std::endl;
+    std::cout << "mmatrix::sum(MatrixHc): \n" << mmatrix<double>::sum(MatrixHc) << std::endl << std::endl;
+    MatrixCopy = mmatrix<double>::maxs(MatrixHc);
+    std::cout << "MatrixCopy = mmatrix::maxs(MatrixHc): \n" << MatrixCopy.to_string() << std::endl << std::endl;
+    MatrixCopy = mmatrix<double>::mins(MatrixHc);
+    std::cout << "MatrixCopy = mmatrix::mins(MatrixHc): \n" << MatrixCopy.to_string() << std::endl << std::endl;
+    MatrixCopy = mmatrix<double>::sums(MatrixHc);
+    std::cout << "MatrixCopy = mmatrix::sums(MatrixHc): \n" << MatrixCopy.to_string() << std::endl << std::endl;
+
+    MatrixCopy = mmatrix<double>::covariance(MatrixHc);
+    std::cout << "MatrixCopy = mmatrix::covariance(MatrixHc): \n" << MatrixCopy.to_string() << std::endl << std::endl;
+    MatrixCopy = mmatrix<double>::gramian(MatrixHc);
+    std::cout << "MatrixCopy = mmatrix::gramian(MatrixHc): \n" << MatrixCopy.to_string() << std::endl << std::endl;
 }
 
 void static_norms(){

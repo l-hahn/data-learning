@@ -192,14 +192,14 @@ namespace data_learning{
             double NewSigma = 1.0/(2.0*_Sigma);
             for(std::size_t i = 0; i < _DataMatrix.row_size(); i++){
                 mmatrix<T> DataProtoDist = mmatrix<T>::vector_norms(_Prototypes - _DataMatrix[i],mmatrix<T>::euclids).transpose()*NewSigma;
-                DataProtoDist -= mmatrix<T>::min(DataProtoDist);
+                DataProtoDist -= mmatrix<T>::mins(DataProtoDist);
                 //Final Step: _Assignment(i,:) =  exp(DataProtoDist * Pj*-1)/sum(Pj*DataProtoDist*-1)[0][0]
             }
             
-            _ClusterProb = mmatrix<T>::sum(_Assignments.transposition())/(T)_DataMatrix.row_size();
+            _ClusterProb = mmatrix<T>::sums(_Assignments.transposition())/(T)_DataMatrix.row_size();
             for(std::size_t i = 0; i < _K; i++){
                 mmatrix<T> NewProto = _DataMatrix.vec_entry_mult(_Assignments.transposition()[i]);
-                _Prototypes[i] = (mmatrix<T>::sum(NewProto.transposition())/mmatrix<T>::sum(_Assignments.transposition()[i])[0][0])[0];
+                _Prototypes[i] = (mmatrix<T>::sums(NewProto.transposition())/mmatrix<T>::sum(_Assignments.transposition()[i]))[0];
             }
             NewSigma = 0;
             for(std::size_t i = 0; i < _DataMatrix.row_size(); i++){
@@ -422,7 +422,7 @@ namespace data_learning{
             }
             for(std::size_t i = 0; i < _K; i++){
                 mmatrix<T> NewProto = _DataMatrix.vec_entry_mult(_Assignments.transposition()[i]);
-                _Prototypes[i] = (mmatrix<T>::sum(NewProto.transposition())/mmatrix<T>::sum(_Assignments.transposition()[i])[0][0])[0];
+                _Prototypes[i] = (mmatrix<T>::sums(NewProto.transposition())/mmatrix<T>::sum(_Assignments.transposition()[i]))[0];
             }
             for(std::size_t i = 0; i < _DataMatrix.row_size(); i++){
                 ReconstError += (double)(mmatrix<T>::vector_norms(_Prototypes - _DataMatrix[i],mmatrix<T>::euclids)*_Assignments[i])[0][0];
@@ -438,8 +438,8 @@ namespace data_learning{
             while(Try < Steps){
                 ReconstError.push_back(cluster());
                 Try++, Idx++;
-                if(std::abs(mmatrix<T>::min(mmatrix<T>::max(_Assignments.transposition()))[0][0]) < 1e-10){
-                    while(std::abs(mmatrix<T>::min(mmatrix<T>::max(_Assignments.transposition()))[0][0]) < 1e-10){
+                if(std::abs(mmatrix<T>::min(mmatrix<T>::maxs(_Assignments.transposition()))) < 1e-10){
+                    while(std::abs(mmatrix<T>::min(mmatrix<T>::maxs(_Assignments.transposition()))) < 1e-10){
                         ReconstError.clear();
                         initialisation();
                         ReconstError.push_back(cluster());
@@ -553,7 +553,7 @@ namespace data_learning{
                 _Assignments = mmatrix<T>(_DataMatrix.row_size(), _K);
                 _Prototypes = initial_proto();
                 initial_assign();
-            }while(std::abs(mmatrix<T>::min(mmatrix<T>::max(_Assignments.transposition()))[0][0]) <1e-10);
+            }while(std::abs(mmatrix<T>::min(mmatrix<T>::maxs(_Assignments.transposition()))) <1e-10);
         }
     };
 };

@@ -27,9 +27,9 @@ std::vector<double> split(const std::string &s, char delim);
 
 /*===Main=====================================================================*/
 int main(){
-    debug_kmeans();
+    //debug_kmeans();
     //debug_matrix();
-    //debug_pca();
+    debug_pca();
     //debug_mds();
 
     return 0;
@@ -80,7 +80,7 @@ void debug_pca(){
     std::vector<double> data;
     std::string Line;
 
-    std::ifstream Input("data-test/Hidden1.dat");
+    std::ifstream Input("test_data/Hidden2.dat");
     while(!Input.eof()){
         std::getline(Input,Line);
         data = split(Line, ' ');
@@ -90,19 +90,19 @@ void debug_pca(){
     }
     Input.close();
     
-    
     data_learning::mining::pca<double> PCA = data_learning::mining::pca<double>(DataMat);
 
     unsigned EigNumb = 10;
 
-    std::ofstream Output("data-test/EigenSpectum_PCA.dat"); 
+
+    std::ofstream Output("test_data/EigenSpectum_PCA.dat"); 
     EigSpec = PCA.eigen_spectrum();
     for(unsigned i = 0; i < EigSpec.col_size(); i++){
         Output << EigSpec[0][i] << std::endl;
     }
     Output.close();
 
-    Output = std::ofstream("data-test/PrincipleComponents_PCA.dat");
+    Output = std::ofstream("test_data/PrincipleComponents_PCA.dat");
     PrinComp = PCA.principle_components(EigNumb);
     for(unsigned i = 0; i < PrinComp.row_size(); i++){
         for(unsigned j = 0; j < PrinComp.col_size()-1; j++){
@@ -112,7 +112,7 @@ void debug_pca(){
     }
     Output.close();
 
-    Output = std::ofstream("data-test/Loadings_PCA.dat");
+    Output = std::ofstream("test_data/Loadings_PCA.dat");
     EigenVectors = PCA.loadings();
     for(unsigned i = 0; i < EigenVectors.row_size(); i++){
         for(unsigned j = 0; j < EigenVectors.col_size()-1; j++){

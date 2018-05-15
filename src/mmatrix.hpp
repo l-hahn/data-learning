@@ -137,16 +137,23 @@ class mmatrix{
         static mmatrix<T> repmat(mmatrix<T> & Mat, std::size_t Row = 1, std::size_t Col = 1);
         static void transform(mmatrix<T> && Mat, std::function<T(T)> const& func);
         static void transform(mmatrix<T> & Mat, std::function<T(T)> const& func);
-        static void transform(mmatrix<T> && Mat, std::function<T(mmatrix<T>)> const& func);
-        static void transform(mmatrix<T> & Mat, std::function<T(mmatrix<T>)> const& func);
+        static void transform(mmatrix<T> && Mat, std::function<mmatrix<T>(mmatrix<T>)> const& func);
+        static void transform(mmatrix<T> & Mat, std::function<mmatrix<T>(mmatrix<T>)> const& func);
+        static void transform(mmatrix<T>::iterator MatBegin, mmatrix<T>::iterator MatEnd, std::function<T(T)> const& func);
 
-        static mmatrix<T> max(mmatrix<T> && Mat);
-        static mmatrix<T> max(mmatrix<T> & Mat);
-        static mmatrix<T> min(mmatrix<T> && Mat);
-        static mmatrix<T> min(mmatrix<T> & Mat);
+        static mmatrix<T> maxs(mmatrix<T> && Mat);
+        static mmatrix<T> maxs(mmatrix<T> & Mat);
+        static T max(mmatrix<T> && Mat);
+        static T max(mmatrix<T> & Mat);
+        static mmatrix<T> mins(mmatrix<T> && Mat);
+        static mmatrix<T> mins(mmatrix<T> & Mat);
+        static T min(mmatrix<T> && Mat);
+        static T min(mmatrix<T> & Mat);
 
-        static mmatrix<T> sum(mmatrix<T> && Mat);
-        static mmatrix<T> sum(mmatrix<T> & Mat);
+        static mmatrix<T> sums(mmatrix<T> && Mat);
+        static mmatrix<T> sums(mmatrix<T> & Mat);
+        static T sum(mmatrix<T> && Mat);
+        static T sum(mmatrix<T> & Mat);
 
         static mmatrix<T> covariance(mmatrix<T> && Mat);
         static mmatrix<T> covariance(mmatrix<T> & Mat);
@@ -181,7 +188,7 @@ class mmatrix{
 
         //TODO: lp-norm, infty-norm, cosine distance, hamming distance, edit distance
 
-        static void thread(std::size_t thrd = 2);
+        static void thread(std::size_t thrd = 1);
         static std::size_t thread();
 
     private:
@@ -442,7 +449,7 @@ mmatrix<T>& mmatrix<T>::operator+=(mmatrix<T> & Mat){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
@@ -467,7 +474,7 @@ mmatrix<T>& mmatrix<T>::operator-=(mmatrix<T> & Mat){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
@@ -500,7 +507,7 @@ mmatrix<T>& mmatrix<T>::operator+=(std::vector<T> & Mat){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
@@ -525,7 +532,7 @@ mmatrix<T>& mmatrix<T>::operator-=(std::vector<T> & Mat){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
@@ -544,7 +551,7 @@ mmatrix<T>& mmatrix<T>::operator+=(const T Val){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * Vals = &Rows[i].front();
@@ -563,7 +570,7 @@ mmatrix<T>& mmatrix<T>::operator-=(const T Val){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * Vals = &Rows[i].front();
@@ -597,7 +604,7 @@ mmatrix<T> mmatrix<T>::operator+(mmatrix<T> & Mat){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
@@ -623,7 +630,7 @@ mmatrix<T> mmatrix<T>::operator-(mmatrix<T> & Mat){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
@@ -657,7 +664,7 @@ mmatrix<T> mmatrix<T>::operator+(std::vector<T> & Mat){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
@@ -682,7 +689,7 @@ mmatrix<T> mmatrix<T>::operator-(std::vector<T> & Mat){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
@@ -702,7 +709,7 @@ mmatrix<T> mmatrix<T>::operator+(const T Val){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
@@ -722,7 +729,7 @@ mmatrix<T> mmatrix<T>::operator-(const T Val){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
@@ -757,7 +764,7 @@ mmatrix<T>& mmatrix<T>::operator*=(mmatrix<T> & Mat){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
@@ -791,7 +798,7 @@ mmatrix<T>& mmatrix<T>::operator*=(const T Val){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * Vals = &Rows[i].front();
@@ -811,7 +818,7 @@ mmatrix<T>& mmatrix<T>::operator/=(const T Val){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * Vals = &Rows[i].front();
@@ -846,7 +853,7 @@ mmatrix<T> mmatrix<T>::operator*(mmatrix<T> & Mat){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < NewDim.Row; i++){
             T * ValsL = &RowsL[i].front();
@@ -879,7 +886,7 @@ mmatrix<T> mmatrix<T>::operator*(const T Val){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
@@ -899,7 +906,7 @@ mmatrix<T> mmatrix<T>::operator/(const T Val){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
@@ -940,7 +947,7 @@ mmatrix<T> mmatrix<T>::transposition(){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < NewDim.Row; i++){
             T * ValsL = &RowsL[i].front();
@@ -968,7 +975,7 @@ void mmatrix<T>::transpose(){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < _Dimensions.Col; i++){
             T * ValsL = &RowsL[i].front();
@@ -1002,7 +1009,7 @@ mmatrix<T> mmatrix<T>::entry_mult(mmatrix<T> & Mat){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
@@ -1035,7 +1042,7 @@ mmatrix<T>& mmatrix<T>::equal_entry_mult(mmatrix<T> & Mat){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
@@ -1070,7 +1077,7 @@ mmatrix<T> mmatrix<T>::vec_entry_mult(std::vector<T> & Mat){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
@@ -1102,7 +1109,7 @@ mmatrix<T>& mmatrix<T>::equal_vec_entry_mult(std::vector<T> & Mat){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < _Dimensions.Row; i++){
             T * ValsL = &RowsL[i].front();
@@ -1191,7 +1198,7 @@ mmatrix<T> mmatrix<T>::repmat(mmatrix<T> & Mat, std::size_t Row, std::size_t Col
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
     for(std::size_t i = 0; i < Mat.row_size(); i++){
         for(std::size_t j = 1; j < Col; j++){
@@ -1207,7 +1214,7 @@ mmatrix<T> mmatrix<T>::repmat(mmatrix<T> & Mat, std::size_t Row, std::size_t Col
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = Mat.row_size(); i < RepMat.row_size(); i++){
             RepMat[i] = RepMat[i%Mat.row_size()];
@@ -1227,17 +1234,26 @@ template<typename T>
 void mmatrix<T>::transform(mmatrix<T> & Mat, std::function<T(T)> const& func){
     for(std::size_t i = 0; i < Mat.row_size(); i++){
         for(std::size_t j = 0; j < Mat.col_size(); j++){
-            func(Mat[i][j]);
+            Mat[i][j] = func(Mat[i][j]);
+        }
+    }
+}
+template<typename T>
+void mmatrix<T>::transform(mmatrix<T>::iterator MatBegin, mmatrix<T>::iterator MatEnd, std::function<T(T)> const& func){
+    for(mmatrix<T>::iterator iter = MatBegin; iter != MatEnd; iter++){
+        for(typename std::vector<T>::iterator jter = iter->begin(); jter != iter->end(); jter++){
+            *jter = func(*jter);
         }
     }
 }
 
+
 template<typename T>
-mmatrix<T> mmatrix<T>::max(mmatrix<T> && Mat){
-    return max(Mat);
+mmatrix<T> mmatrix<T>::maxs(mmatrix<T> && Mat){
+    return maxs(Mat);
 }
 template<typename T>
-mmatrix<T> mmatrix<T>::max(mmatrix<T> & Mat){
+mmatrix<T> mmatrix<T>::maxs(mmatrix<T> & Mat){
     if(Mat.row_size() == 0 || Mat.row_size() == 0){
         throw std::out_of_range("max: column and row count has to be non-zero.");
     }
@@ -1245,7 +1261,7 @@ mmatrix<T> mmatrix<T>::max(mmatrix<T> & Mat){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < Mat.row_size(); i++){
             Max[0][i] = *std::max_element(Mat[i].begin(),Mat[i].end());
@@ -1256,11 +1272,38 @@ mmatrix<T> mmatrix<T>::max(mmatrix<T> & Mat){
     return Max;
 }
 template<typename T>
-mmatrix<T> mmatrix<T>::min(mmatrix<T> && Mat){
-    return min(Mat);
+T mmatrix<T>::max(mmatrix<T> && Mat){
+    return max(Mat);
 }
 template<typename T>
-mmatrix<T> mmatrix<T>::min(mmatrix<T> & Mat){
+T mmatrix<T>::max(mmatrix<T> & Mat){
+    if(Mat.row_size() == 0 || Mat.row_size() == 0){
+        throw std::out_of_range("max: column and row count has to be non-zero.");
+    }
+    T Max = *std::max_element(Mat[0].begin(),Mat[0].end());
+    #ifdef _OPENMP
+    #pragma omp parallel reduction(max:Max)
+    {
+        #pragma omp for nowait
+    #endif
+        for(std::size_t i = 0; i < Mat.row_size(); i++){
+            #ifdef _OPENMP
+                Max = *std::max_element(Mat[i].begin(),Mat[i].end());
+            #else
+                Max = max(Max,*std::max_element(Mat[i].begin(),Mat[i].end()));
+            #endif
+        }
+    #ifdef _OPENMP
+    }
+    #endif
+    return Max;
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::mins(mmatrix<T> && Mat){
+    return mins(Mat);
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::mins(mmatrix<T> & Mat){
     if(Mat.row_size() == 0 || Mat.row_size() == 0){
         throw std::out_of_range("min: column and row count has to be non-zero.");
     }
@@ -1268,7 +1311,7 @@ mmatrix<T> mmatrix<T>::min(mmatrix<T> & Mat){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < Mat.row_size(); i++){
             Min[0][i] = *std::min_element(Mat[i].begin(),Mat[i].end());
@@ -1278,13 +1321,39 @@ mmatrix<T> mmatrix<T>::min(mmatrix<T> & Mat){
     #endif
     return Min;
 }
-
 template<typename T>
-mmatrix<T> mmatrix<T>::sum(mmatrix<T> && Mat){
-    return sum(Mat);
+T mmatrix<T>::min(mmatrix<T> && Mat){
+    return min(Mat);
 }
 template<typename T>
-mmatrix<T> mmatrix<T>::sum(mmatrix<T> & Mat){
+T mmatrix<T>::min(mmatrix<T> & Mat){
+    if(Mat.row_size() == 0 || Mat.row_size() == 0){
+        throw std::out_of_range("max: column and row count has to be non-zero.");
+    }
+    T Min = *std::min_element(Mat[0].begin(),Mat[0].end());
+    #ifdef _OPENMP
+    #pragma omp parallel reduction(min:Min)
+    {
+        #pragma omp for nowait
+    #endif
+        for(std::size_t i = 0; i < Mat.row_size(); i++){
+            #ifdef _OPENMP
+                Min = *std::min_element(Mat[i].begin(),Mat[i].end());
+            #else
+                Min = min(Min,*std::min_element(Mat[i].begin(),Mat[i].end()));
+            #endif
+        }
+    #ifdef _OPENMP
+    }
+    #endif
+    return Min;
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::sums(mmatrix<T> && Mat){
+    return sums(Mat);
+}
+template<typename T>
+mmatrix<T> mmatrix<T>::sums(mmatrix<T> & Mat){
     if(Mat.row_size() == 0 || Mat.row_size() == 0){
         throw std::out_of_range("sum: column and row count has to be non-zero.");
     }
@@ -1294,7 +1363,7 @@ mmatrix<T> mmatrix<T>::sum(mmatrix<T> & Mat){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < Mat.row_size(); i++){
             T * MVec = &MatVec[i].front();
@@ -1309,14 +1378,41 @@ mmatrix<T> mmatrix<T>::sum(mmatrix<T> & Mat){
     #endif
     return Sum;
 }
-
 template<typename T>
-void mmatrix<T>::transform(mmatrix<T> && Mat, std::function<T(mmatrix<T>)> const& func){
-    func(Mat);
+T mmatrix<T>::sum(mmatrix && Mat){
+    sum(Mat);
 }
 template<typename T>
-void mmatrix<T>::transform(mmatrix<T> & Mat, std::function<T(mmatrix<T>)> const& func){
-    func(Mat);
+T mmatrix<T>::sum(mmatrix & Mat){
+    if(Mat.row_size() == 0 || Mat.row_size() == 0){
+        throw std::out_of_range("sum: column and row count has to be non-zero.");
+    }
+    T Sum = T();
+    std::vector<T> * MatVec = &Mat.front();
+    #ifdef _OPENMP
+    #pragma omp parallel reduction(+:Sum)
+    {
+        #pragma omp for nowait
+    #endif
+        for(std::size_t i = 0; i < Mat.row_size(); i++){
+            T * MVec = &MatVec[i].front();
+            for(std::size_t j = 0; j < Mat.col_size(); j++){
+                Sum += MVec[j];
+            }
+        }
+    #ifdef _OPENMP
+    }
+    #endif
+    return Sum;   
+}
+
+template<typename T>
+void mmatrix<T>::transform(mmatrix<T> && Mat, std::function<mmatrix<T>(mmatrix<T>)> const& func){
+    Mat = func(Mat);
+}
+template<typename T>
+void mmatrix<T>::transform(mmatrix<T> & Mat, std::function<mmatrix<T>(mmatrix<T>)> const& func){
+    Mat = func(Mat);
 }
 
 template<typename T>
@@ -1336,7 +1432,7 @@ mmatrix<T> mmatrix<T>::covariance(mmatrix<T> & Mat){
         #pragma omp parallel
         {
             T * Vals = &Rows[i].front();
-            #pragma omp for
+            #pragma omp for nowait
         #endif
             for(std::size_t j = 0; j < Mat._Dimensions.Col; j++){
                 MeanCol[j] += Vals[j];
@@ -1348,7 +1444,7 @@ mmatrix<T> mmatrix<T>::covariance(mmatrix<T> & Mat){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < Mat._Dimensions.Col; i++){
             MeanCol[i] /= Mat._Dimensions.Row;
@@ -1399,7 +1495,7 @@ mmatrix<T> mmatrix<T>::gramian(mmatrix<T> & Mat){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < GramianMat.row_size(); i++){
             T * GVec = &GMat[i].front();
@@ -1416,7 +1512,7 @@ mmatrix<T> mmatrix<T>::gramian(mmatrix<T> & Mat){
         #pragma omp parallel
         {
             T * GVec = &GMat[i].front();
-            #pragma omp for
+            #pragma omp for nowait
         #endif
             for(std::size_t j = 0; j < GramianMat.col_size(); j++){
                 CMean[j] += GVec[j];       
@@ -1435,7 +1531,7 @@ mmatrix<T> mmatrix<T>::gramian(mmatrix<T> & Mat){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < RowMean.size(); i++){
             RMean[i] /= RowMean.size();
@@ -1449,7 +1545,7 @@ mmatrix<T> mmatrix<T>::gramian(mmatrix<T> & Mat){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < GramianMat.row_size(); i++){
             T * GVec = &GMat[i].front();
@@ -1476,7 +1572,7 @@ mmatrix<T> mmatrix<T>::distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::size_
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < Mat1.row_size(); i++){
             mmatrix<T> M(Mat1[i]);
@@ -1503,7 +1599,7 @@ mmatrix<T> mmatrix<T>::distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::funct
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < Mat1.row_size(); i++){
             mmatrix<T> M(Mat1[i]);
@@ -1618,7 +1714,7 @@ mmatrix<T> mmatrix<T>::l_p_norms(mmatrix<T> & Matrix, std::size_t Norm){
     #ifdef _OPENMP
     #pragma omp parallel
     {
-        #pragma omp for
+        #pragma omp for nowait
     #endif
         for(std::size_t i = 0; i < Matrix.row_size(); i++){
             T UnSqr =  std::accumulate(MVec[i].begin(),MVec[i].end(), T(), [&Norm](T & SumPart, T & Element){
