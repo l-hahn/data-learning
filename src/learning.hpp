@@ -30,8 +30,8 @@ namespace data_learning{
 
         };
 
-        class forst{
-
+        class forest{
+            
         };
     };   
 };

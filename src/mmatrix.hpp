@@ -160,18 +160,12 @@ class mmatrix{
         static mmatrix<T> reduce_covariance(mmatrix<T> & Mat, std::vector< meigen<T> > & Eigens);
         static mmatrix<T> gramian(mmatrix<T> && Mat);
         static mmatrix<T> gramian(mmatrix<T> & Mat);
-        static mmatrix<T> distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, std::size_t Norm = 2);
-        static mmatrix<T> distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::size_t Norm = 2);
-        static mmatrix<T> distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, std::function<T(mmatrix<T>)> const& Norm = euclid);
-        static mmatrix<T> distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::function<T(mmatrix<T>)> const& Norm = euclid);
-        static mmatrix<T> distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, std::function<mmatrix<T>(mmatrix<T>)> const& Norm = euclids);
-        static mmatrix<T> distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::function<mmatrix<T>(mmatrix<T>)> const& Norm = euclids);
+        static T distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, std::size_t Norm = 2);
+        static T distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::size_t Norm = 2);
         static mmatrix<T> vectorwise_distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, std::size_t Norm = 2);
         static mmatrix<T> vectorwise_distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::size_t Norm = 2);
         static mmatrix<T> vectorwise_distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, std::function<T(mmatrix<T>)> const& Norm = euclid);
         static mmatrix<T> vectorwise_distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::function<T(mmatrix<T>)> const& Norm = euclid);
-        static mmatrix<T> vectorwise_distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, std::function<mmatrix<T>(mmatrix<T>)> const& Norm = euclids);
-        static mmatrix<T> vectorwise_distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::function<mmatrix<T>(mmatrix<T>)> const& Norm = euclids);
         
         static std::vector< meigen<T> > eigen(mmatrix<T> && Mat, std::size_t VecNo = 0, std::function<T(mmatrix<T>)> const& Norm = euclid);
         static std::vector< meigen<T> > eigen(mmatrix<T> & Mat, std::size_t VecNo = 0, std::function<T(mmatrix<T>)> const& Norm = euclid);
@@ -1568,6 +1562,32 @@ mmatrix<T> mmatrix<T>::gramian(mmatrix<T> & Mat){
     return GramianMat;
 }
 template<typename T>
+T mmatrix<T>::distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, std::size_t Norm){
+    return distance(Mat1, Mat2, Norm);
+}
+template<typename T>
+T mmatrix<T>::distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::size_t Norm){
+    if(Mat1.col_size() != Mat2.col_size()){
+        throw std::out_of_range("distance: Matrix1 dimension (" + Mat1.dimension().to_string() + ") != Matrix2 dimension (" + Mat1.dimension().to_string() + ")");
+    }
+    T Dist = T();
+    #ifdef _OPENMP
+    #pragma omp parallel reduction(+:Dist)
+    {
+        #pragma omp for nowait
+    #endif
+        for(std::size_t i = 0; i < Mat1.row_size(); i++){
+            for(std::size_t j = 0; j < Mat1.col_size(); j++){
+                Dist += std::pow(std::abs(Mat1[i][j] - Mat2[i][j]),Norm);
+            }
+        }
+    #ifdef _OPENMP
+    }
+    #endif
+    Dist = std::pow(Dist, (1.0/Norm));
+    return Dist;
+}
+template<typename T>
 mmatrix<T> mmatrix<T>::vectorwise_distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, std::size_t Norm){
     return vectorwise_distance(Mat1, Mat2, Norm);
 }
@@ -1596,7 +1616,7 @@ mmatrix<T> mmatrix<T>::vectorwise_distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2,
 }
 template<typename T>
 mmatrix<T> mmatrix<T>::vectorwise_distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, std::function<T(mmatrix<T>)> const& Norm){
-    return distance(Mat1, Mat2, Norm);
+    return vectorwise_distance(Mat1, Mat2, Norm);
 }
 template<typename T>
 mmatrix<T> mmatrix<T>::vectorwise_distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::function<T(mmatrix<T>)> const& Norm){
@@ -1620,7 +1640,6 @@ mmatrix<T> mmatrix<T>::vectorwise_distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2,
     #endif
     return DistMat;
 }
-
 
 template<typename T>
 std::vector< meigen<T> > mmatrix<T>::eigen(mmatrix<T> && Mat, std::size_t VecNo, std::function<T(mmatrix<T>)> const& Norm){

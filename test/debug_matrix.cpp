@@ -5,6 +5,7 @@
 #include <omp.h>
 
 #include "../src/mmatrix.hpp"
+#include "../src/meigen.hpp"
 
 /*===Classes-Structurres======================================================*/
 
@@ -16,8 +17,7 @@ void memory();
 void push_back();
 void operators();
 void static_operations();
-void static_norms();
-void thread();  
+void static_norms(); 
 
 
 /*===Main=====================================================================*/
@@ -89,9 +89,9 @@ void memory(){
     Matrix0.resize(MatrixHc.row_size()-1,MatrixHc.col_size()-1,3);
     std::cout << "Matrix0.resize(MatrixHc.row_size()-1,MatrixHc.col_size()-2,3): \n" << Matrix0.to_string() << std::endl << std::endl;
     Matrix0.reserve(10);
-    std::cout << "Matrix0.reserve(1000): \n" << Matrix0.to_string() << std::endl << std::endl;
+    std::cout << "Matrix0.reserve(10): \n" << Matrix0.to_string() << std::endl << std::endl;
     Matrix0.resize(10,-1.337);
-    std::cout << "Matrix0.resize(1000,-1): \n" << Matrix0.to_string() << std::endl << std::endl;
+    std::cout << "Matrix0.resize(10,-1.337): \n" << Matrix0.to_string() << std::endl << std::endl;
 
 }
 
@@ -367,6 +367,19 @@ void static_norms(){
     std::cout << "MatrixCopy: \n" << MatrixCopy.to_string() << std::endl << std::endl;    
 
 
-    MatrixCopy = mmatrix<double>::distance(MatrixCopy,MatrixHc,1);
-    std::cout << "MatrixCopy = mmatrix::distance(MatrixCopy,MatrixHc,1): \n" << MatrixCopy.to_string() << std::endl << std::endl;
+    MatrixCopy = mmatrix<double>::vectorwise_distance(MatrixCopy,MatrixHc,1);
+    std::cout << "MatrixCopy = mmatrix::vectorwise_distance(MatrixCopy,MatrixHc,1): \n" << MatrixCopy.to_string() << std::endl << std::endl;
+    MatrixCopy = mmatrix<double>::vectorwise_distance(MatrixCopy,MatrixHc,1);
+    std::cout << "MatrixCopy = mmatrix::vectorwise_distance(MatrixCopy,MatrixHc,1): \n" << MatrixCopy.to_string() << std::endl << std::endl;
+    Norm = mmatrix<double>::distance(MatrixCopy,MatrixHc,2);  
+    std::cout << "Norm = mmatrix::distance(MatrixCopy,MatrixHc,2): \n" << Norm << std::endl << std::endl;
+
+    std::vector< meigen<double> > Eigens = mmatrix<double>::eigen(MatrixHc,MatrixHc.col_size(),mmatrix<double>::euclid);
+    std::cout << "Eigen = mmatrix::eigen(MatrixHc,MatrixHc.col_size(),mmatrix::euclid):" << std::endl;
+    int Ctr = 0;
+    for(auto & Eigen : Eigens){
+        std::cout << "\tEigen.vector() " << Ctr << ": \n\t" << Eigen.vector().to_string() << std::endl;
+        std::cout << "\tEigen.value() " << Ctr++ << " \n\t" << Eigen.value() << std::endl;
+    }
+    std::cout << std::endl;
 }

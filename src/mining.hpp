@@ -229,7 +229,7 @@ namespace data_learning{
         void mds<T>::data_matrix(mmatrix<T> & Mat, std::function<T(mmatrix<T>)> const& Norm){
             _Eigens.clear();
             _GramianMatrix.clear();
-            _DistMatrix = mmatrix<T>::distance(Mat,Mat,Norm);
+            _DistMatrix = mmatrix<T>::vectorwise_distance(Mat,Mat,Norm);
             std::ofstream asdf("dist.dat");
             asdf << _DistMatrix.to_string() << std::endl;
             asdf.close();
