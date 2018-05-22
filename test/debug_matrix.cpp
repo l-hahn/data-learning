@@ -29,7 +29,6 @@ int main(){
     operators();
     static_operations();
     static_norms();
-    thread();
 }
 
 /**
@@ -323,9 +322,51 @@ void static_operations(){
 }
 
 void static_norms(){
+    std::cout << std::endl << std::string(80,'#') << std::endl;
+    std::cout << "#\t\tF) Static Normalisation Operations\t\t\t       #" << std::endl;
+    std::cout << std::string(80,'#') << std::endl << "Reset\n" << std::endl;
 
-}
+    mmatrix<double> MatrixHc = {{1,2,3},{4,5,6},{7,8,9}};
+    mmatrix<double> MatrixVec = {1,2,3};
+    mmatrix<double> MatrixCopy(MatrixVec);
+    double Norm;
 
-void thread(){
+    std::cout << "MatrixHc: \n" << MatrixHc.to_string() << std::endl << std::endl;    
+    std::cout << "MatrixVec: \n" << MatrixVec.to_string() << std::endl << std::endl;    
+    std::cout << "MatrixCopy: \n" << MatrixCopy.to_string() << std::endl << std::endl;    
 
+
+    MatrixCopy = mmatrix<double>::vector_norms(MatrixHc,1);
+    std::cout << "MatrixCopy = mmatrix::vector_norms(MatrixHc,1): \n" << MatrixCopy.to_string() << std::endl << std::endl;
+    MatrixCopy = mmatrix<double>::vector_norms(MatrixHc,2);
+    std::cout << "MatrixCopy = mmatrix::vector_norms(MatrixHc,2): \n" << MatrixCopy.to_string() << std::endl << std::endl;
+    MatrixCopy = mmatrix<double>::vector_norms(MatrixHc,200);
+    std::cout << "MatrixCopy = mmatrix::vector_norms(MatrixHc,200): \n" << MatrixCopy.to_string() << std::endl << std::endl;
+    
+    Norm = mmatrix<double>::vector_norm(MatrixCopy,1);
+    std::cout << "Norm = mmatrix::vector_norm(MatrixCopy,1): \n" << Norm << std::endl << std::endl;
+    Norm = mmatrix<double>::vector_norm(MatrixCopy,2);
+    std::cout << "Norm = mmatrix::vector_norm(MatrixCopy,2): \n" << Norm << std::endl << std::endl;
+    Norm = mmatrix<double>::vector_norm(MatrixCopy,200);
+    std::cout << "Norm = mmatrix::vector_norm(MatrixCopy,200): \n" << Norm << std::endl << std::endl;
+    
+    MatrixCopy = mmatrix<double>::vector_norms(MatrixHc,mmatrix<double>::euclids);
+    std::cout << "MatrixCopy = mmatrix::vector_norms(MatrixHc,mmatrix::euclids): \n" << MatrixCopy.to_string() << std::endl << std::endl;
+    MatrixCopy = mmatrix<double>::vector_norms(MatrixHc,mmatrix<double>::taxicaps);
+    std::cout << "MatrixCopy = mmatrix::vector_norms(MatrixHc,mmatrix::taxicaps): \n" << MatrixCopy.to_string() << std::endl << std::endl;
+    
+
+    Norm = mmatrix<double>::vector_norm(MatrixCopy,mmatrix<double>::taxicap);
+    std::cout << "Norm = mmatrix::vector_norm(MatrixCopy,mmatrix::taxicap): \n" << Norm << std::endl << std::endl;
+    Norm = mmatrix<double>::vector_norm(MatrixCopy,mmatrix<double>::euclid);
+    std::cout << "Norm = mmatrix::vector_norm(MatrixCopy,mmatrix::euclid): \n" << Norm << std::endl << std::endl;
+
+
+    MatrixCopy = MatrixHc*2;
+    std::cout << "MatrixHc: \n" << MatrixHc.to_string() << std::endl << std::endl;       
+    std::cout << "MatrixCopy: \n" << MatrixCopy.to_string() << std::endl << std::endl;    
+
+
+    MatrixCopy = mmatrix<double>::distance(MatrixCopy,MatrixHc,1);
+    std::cout << "MatrixCopy = mmatrix::distance(MatrixCopy,MatrixHc,1): \n" << MatrixCopy.to_string() << std::endl << std::endl;
 }

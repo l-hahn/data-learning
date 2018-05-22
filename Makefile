@@ -1,7 +1,7 @@
 CC=g++
 CFLAGS=-Wall -O3 -std=c++11 -fopenmp 
 
-BASESRC=test/debug.cpp
+BASESRC=test/debug_matrix.cpp
 BASEHDR=src/mdimension.hpp src/mmatrix.hpp src/meigen.hpp src/mining.hpp src/learning.hpp src/clustering.hpp
 BASEOBJ=$(BASESRC:.cpp=.o)
 BASEFLD=bin

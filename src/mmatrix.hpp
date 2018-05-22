@@ -106,7 +106,6 @@ class mmatrix{
         mmatrix<T>& operator=(const mmatrix<T> && Mat);
         mmatrix<T>& operator=(const mmatrix<T> & Mat);
 
-
         mmatrix<T> transposition();
         void transpose();
         mmatrix<T> entry_mult(mmatrix<T> && Mat);
@@ -157,8 +156,8 @@ class mmatrix{
 
         static mmatrix<T> covariance(mmatrix<T> && Mat);
         static mmatrix<T> covariance(mmatrix<T> & Mat);
-        static mmatrix<T> reduced_covariance(mmatrix<T> && Mat, std::vector< meigen<T> > && Eigens);
-        static mmatrix<T> reduced_covariance(mmatrix<T> & Mat, std::vector< meigen<T> > & Eigens);
+        static mmatrix<T> reduce_covariance(mmatrix<T> && Mat, std::vector< meigen<T> > && Eigens);
+        static mmatrix<T> reduce_covariance(mmatrix<T> & Mat, std::vector< meigen<T> > & Eigens);
         static mmatrix<T> gramian(mmatrix<T> && Mat);
         static mmatrix<T> gramian(mmatrix<T> & Mat);
         static mmatrix<T> distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, std::size_t Norm = 2);
@@ -167,6 +166,13 @@ class mmatrix{
         static mmatrix<T> distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::function<T(mmatrix<T>)> const& Norm = euclid);
         static mmatrix<T> distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, std::function<mmatrix<T>(mmatrix<T>)> const& Norm = euclids);
         static mmatrix<T> distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::function<mmatrix<T>(mmatrix<T>)> const& Norm = euclids);
+        static mmatrix<T> vectorwise_distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, std::size_t Norm = 2);
+        static mmatrix<T> vectorwise_distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::size_t Norm = 2);
+        static mmatrix<T> vectorwise_distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, std::function<T(mmatrix<T>)> const& Norm = euclid);
+        static mmatrix<T> vectorwise_distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::function<T(mmatrix<T>)> const& Norm = euclid);
+        static mmatrix<T> vectorwise_distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, std::function<mmatrix<T>(mmatrix<T>)> const& Norm = euclids);
+        static mmatrix<T> vectorwise_distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::function<mmatrix<T>(mmatrix<T>)> const& Norm = euclids);
+        
         static std::vector< meigen<T> > eigen(mmatrix<T> && Mat, std::size_t VecNo = 0, std::function<T(mmatrix<T>)> const& Norm = euclid);
         static std::vector< meigen<T> > eigen(mmatrix<T> & Mat, std::size_t VecNo = 0, std::function<T(mmatrix<T>)> const& Norm = euclid);
 
@@ -199,7 +205,7 @@ class mmatrix{
         static T l_p_norm(mmatrix<T> && Matrix, std::size_t Norm);
         static T l_p_norm(mmatrix<T> & Matrix, std::size_t Norm);
         static T eucl_norm(mmatrix<T>  Matrix);
-        static T taxicap_Norm(mmatrix<T>  Matrix);
+        static T taxicap_norm(mmatrix<T>  Matrix);
         static mdimension check_length_input(const std::vector< std::vector<T> > & Mat);
         static mdimension check_length_input(const std::initializer_list< std::initializer_list<T> > & Mat);
 
@@ -1462,12 +1468,14 @@ mmatrix<T> mmatrix<T>::covariance(mmatrix<T> & Mat){
     }
     return CovMat;
 }
+//Reduces e.g. covariance matrix by impact of the submitted eigen-vector-value pair.
+//This is used to get the next eigen-vector-value pair from e.g. covariance matrix.
 template<typename T>
-mmatrix<T>  mmatrix<T>::reduced_covariance(mmatrix<T> && Mat, std::vector< meigen<T> > && Eigens){
-    return reduced_covariance(Mat, Eigens);
+mmatrix<T>  mmatrix<T>::reduce_covariance(mmatrix<T> && Mat, std::vector< meigen<T> > && Eigens){
+    return reduce_covariance(Mat, Eigens);
 }
 template<typename T>
-mmatrix<T>  mmatrix<T>::reduced_covariance(mmatrix<T> & Mat, std::vector< meigen<T> > & Eigens){
+mmatrix<T>  mmatrix<T>::reduce_covariance(mmatrix<T> & Mat, std::vector< meigen<T> > & Eigens){
     mmatrix<T> CovMat = Mat;
     for(meigen<T> Eigen : Eigens){
         Mat -= Eigen.vector().transposition()*Eigen.vector()*Eigen.value();
@@ -1560,11 +1568,11 @@ mmatrix<T> mmatrix<T>::gramian(mmatrix<T> & Mat){
     return GramianMat;
 }
 template<typename T>
-mmatrix<T> mmatrix<T>::distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, std::size_t Norm){
-    return distance(Mat1, Mat2, Norm);
+mmatrix<T> mmatrix<T>::vectorwise_distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, std::size_t Norm){
+    return vectorwise_distance(Mat1, Mat2, Norm);
 }
 template<typename T>
-mmatrix<T> mmatrix<T>::distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::size_t Norm){
+mmatrix<T> mmatrix<T>::vectorwise_distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::size_t Norm){
     if(Mat1.col_size() != Mat2.col_size()){
         throw std::out_of_range("distance: Matrix1 col_size (" + std::to_string(Mat1.col_size()) + ") != Matrix2 col_size (" + std::to_string(Mat2.col_size()) + ")");
     }
@@ -1587,11 +1595,11 @@ mmatrix<T> mmatrix<T>::distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::size_
     return DistMat;
 }
 template<typename T>
-mmatrix<T> mmatrix<T>::distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, std::function<T(mmatrix<T>)> const& Norm){
+mmatrix<T> mmatrix<T>::vectorwise_distance(mmatrix<T> && Mat1, mmatrix<T> && Mat2, std::function<T(mmatrix<T>)> const& Norm){
     return distance(Mat1, Mat2, Norm);
 }
 template<typename T>
-mmatrix<T> mmatrix<T>::distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::function<T(mmatrix<T>)> const& Norm){
+mmatrix<T> mmatrix<T>::vectorwise_distance(mmatrix<T> & Mat1, mmatrix<T> & Mat2, std::function<T(mmatrix<T>)> const& Norm){
     if(Mat1.col_size() != Mat2.col_size()){
         throw std::out_of_range("distance: Matrix1 col_size (" + std::to_string(Mat1.col_size()) + ") != Matrix2 col_size (" + std::to_string(Mat2.col_size()) + ")");
     }
@@ -1677,7 +1685,7 @@ T mmatrix<T>::eucl_norm(mmatrix<T>  Matrix){
     return l_p_norm(Matrix, 2);
 }
 template<typename T>
-T mmatrix<T>::taxicap_Norm(mmatrix<T>  Matrix){
+T mmatrix<T>::taxicap_norm(mmatrix<T>  Matrix){
     return l_p_norm(Matrix, 1);    
 }
 template<typename T>
