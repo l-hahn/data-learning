@@ -64,7 +64,7 @@ mdimension::mdimension(const mdimension && Dim){
 
 
 std::string mdimension::to_string() const{
-    std::string Str = "[" + std::to_string(Row) + "x"+std::to_string(Col) + "]";
+    std::string Str = "<" + std::to_string(Row) + "x"+std::to_string(Col) + ">";
     return Str;
 }
 
