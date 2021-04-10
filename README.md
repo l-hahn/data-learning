@@ -7,7 +7,8 @@ Important is to include mmatrix.hpp, the "mathematical matrix" class and cluster
 All functions are defined within the scope data_learning::< category >::< class >, e.g. data_learning::clustering::kmeans
 
 This personal project is being developed in freetime, so at some points there will be many changes, but at some other points in the future, there wont be changes within a few days.
-Final design, including this ReadMe, will be estimated with winter 2018!
+
+As of 2021 I start continuing on this project; a plan besides finishing cpu implementation is to get it run on AMD GPUs with OpenCL.
 
 If there are questions, please feel free to contact me:
   lhahn@data-learning.de
